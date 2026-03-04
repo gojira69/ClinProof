@@ -1,6 +1,6 @@
 # ClinProof: Structured Medical GraphRAG
 
-ClinProof operates over structured knowledge graphs (UMLS, SNOMED CT, RxNorm) currently.
+ClinProof operates over structured knowledge graphs (UMLS, SNOMED CT, RxNorm and PubMed abstracts) currently.
 
 ## System Flow & Step-by-Step Example
 
