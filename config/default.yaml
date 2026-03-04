@@ -1,0 +1,60 @@
+################################################################################
+# ClinProof Default Configuration
+################################################################################
+
+model:
+  name: "qwen2.5:14b"
+  temperature: 0
+  context_length: 32768
+  max_new_tokens: 1024
+
+retrieval:
+  mode: "moe_graph"         # bm25 | medcpt | graph | moe_flat | moe_graph
+  k1: 32
+  k2: 5
+  use_rrf: true
+  rrf_k: 100
+  bm25_candidates: 100
+  multihop:
+    enabled: true
+    max_hops: 3
+    hop_k: 10
+  moe:
+    domains: ["pharmacology", "anatomy", "clinical", "general"]
+
+compression:
+  enabled: true
+  budget_ratio: 0.4
+  mmr_lambda: 0.7
+  min_sentences: 5
+
+citation:
+  mode: "pubmed"            # pubmed | none  (no LLM re-ranking, just PMID attachment)
+
+kg:
+  db_path: "/mnt/d/Harsha/AoLM/project/clinproof/data/clinproof_kg.db"
+  graph_path: "/mnt/d/Harsha/AoLM/project/clinproof/data/kg_graph.pkl"
+  umls_data_path: "/mnt/d/Harsha/AoLM/project/data/umls-2025AB-metathesaurus-full/2025AB/META"
+  snomed_data_path: "/mnt/d/Harsha/AoLM/project/data/SnomedCT_InternationalRF2_PRODUCTION_20260201T120000Z/SnomedCT_InternationalRF2_PRODUCTION_20260201T120000Z/Snapshot/Terminology"
+  rxnorm_data_path: "/mnt/d/Harsha/AoLM/project/data/RxNorm_full_02022026/rrf"
+
+pubmed:
+  email: "sriharsha4002@gmail.com"
+  api_key: ""
+  cache_dir: "/mnt/d/Harsha/AoLM/project/clinproof/data/pubmed_cache"
+  max_results: 20
+
+corpus:
+  dir: "/mnt/d/Harsha/AoLM/project/clinproof/data/corpus"
+  sources: ["textbooks", "statpearls", "pubmed"]
+
+evaluation:
+  judge: "gemini"           # gemini | local_nli
+  gemini_model: "gemini-2.0-flash"
+  gemini_api_key: ""        # or set GOOGLE_API_KEY env var
+  datasets: ["medqa_us", "medmcqa", "pubmedqa", "mmlu_med"]
+  results_dir: "/mnt/d/Harsha/AoLM/project/clinproof/results"
+
+paths:
+  project_root: "/mnt/d/Harsha/AoLM/project/clinproof"
+  logs_dir: "/mnt/d/Harsha/AoLM/project/clinproof/logs"
