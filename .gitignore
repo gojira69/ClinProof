@@ -1,7 +1,7 @@
 # Data and Logs
 data/
 logs/
-
+pubmed_download/
 # Python Cache
 __pycache__/
 *.py[cod]
