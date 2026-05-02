@@ -1,0 +1,89 @@
+{
+  "config": {
+    "tag": "hybrid_smoke",
+    "models": [
+      "mistral:7b"
+    ],
+    "hierarchy_mode": "standard",
+    "votes": 1,
+    "use_rag": true,
+    "use_graph": true,
+    "use_pubmed": true,
+    "graph_hops": 3,
+    "k": 20,
+    "ann_k": 100,
+    "context_len": 8000,
+    "parallel_workers": 2,
+    "resume": false,
+    "datasets": [
+      "bioasq"
+    ]
+  },
+  "metrics": {
+    "accuracy": 0.6666666666666666,
+    "precision": 0.5,
+    "recall": 0.3333333333333333,
+    "f1": 0.4
+  },
+  "results": [
+    {
+      "id": "58ec72a4eda5a5767200000f",
+      "question": "Is tirilazad effective for treatment of aneurysmal subarachnoid haemorrhage?",
+      "gt_answer": "B",
+      "pred_answer": "A",
+      "correct": false,
+      "time_seconds": 6.61,
+      "atomic_props": "None",
+      "retrieved_context": "\nDocument [1] (Title: PubMed PMID:9509802)  This study used data from a multinational phase III randomized, double-blind, vehicle-controlled trial to evaluate the cost-effectiveness of tirilazad mesylate (Freedox) in the treatment of aneurysmal subarachnoid hemorrhage. \nDocument [2] (Title: PubMed PMID:20166088)  Delayed cerebral ischaemia is a significant contributor to poor outcome (death or disability) in patients with aneurysmal subarachnoid haemorrhage (SAH). \nDocument [3] (Title: PubMed PMID:10350245)  The use of other potentially effective rescue therapies (that is, hypervolemia, hemodilution, and induced hypertension) to counteract vasospasm may have been responsible for these contrasting observations between the two groups. \nDocument [4] (Title: PubMed PMID:7714603)  We conclude that tirilazad mesylate is safe in SAH patients at doses up to 6 mg/kg per day for up to 10 days and is a promising drug for the treatment of patients with aneurysmal SAH. \nDocument [5] (Title: PubMed PMID:8739825)  Tirilazad mesylate is a membrane lipid peroxidation inhibitor being evaluated for the treatment of patients with subarachnoid haemorrhage (SAH); phenobarbital may be administered to these patients for seizure prophylaxis. \nDocument [6] (Title: PubMed PMID:10605541)  There is good evidence for the benefit of nimodipine in aneurysmal subarachnoid haemorrhage. \nDocument [7] (Title: PubMed PMID:20175798)  Rivastigmine has been shown to be effective for patients with mild-to-moderate Alzheimer's disease. Its effect on cognitive impairment after aneurysmal subarachnoid haemorrhage has not been previously studied. The aim of the study is to evaluate the efficacy and safety of rivastigmine 3 mg/day over 12 weeks in patients with aneurysmal subarachnoid haemorrhage and persistent cognitive impairment. \nDocument [8] (Title: PubMed PMID:17290176)  Cerebral vasospasm after aneurysmal subarachnoid hemorrhage (SAH) is associated with the volume and location of subarachnoid blood clots. \nDocument [9] (Title: PubMed PMID:23690884)  The approach of Bayesian neural networks with fuzzy logic inferences was applied to data from five trials of Tirilazad for aneurysmal subarachnoid hemorrhage (3551 patients). \nDocument [10] (Title: PubMed PMID:8419783)  A continuous prospective audit of all patients with aneurysmal subarachnoid haemorrhage admitted to the joint neurosurgery units of Prince Henry's and Alfred hospitals, Melbourne. In our experience, nimodipine appears to have substantially reduced the incidence of delayed ischaemic deficits in patients with aneurysmal subarachnoid haemorrhage, with a resultant improvement in overall patient outcome. \nDocument [11] (Title: PubMed PMID:10833583)  Two cases of poor grade aneurysmal subarachnoid haemorrhage were treated with interlocking detachable coils. \nDocument [12] (Title: PubMed PMID:18810661)  Tirilazad had no effect on clinical outcome but did decrease symptomatic vasospasm in five trials of aneurysmal SAH. \nDocument [13] (Title: PubMed PMID:8122540)  The effects of thromboxane A2 synthetase inhibitor and hyperdynamic therapy on delayed cerebral ischaemia following aneurysmal subarachnoid haemorrhage were evaluated in a series of twenty eight patients, who underwent aneurysmal clipping with 72 hours after subarachnoid haemorrhage.",
+      "vote_distribution": {
+        "A": 1
+      },
+      "reasoning_traces": [
+        {
+          "step_by_step_thinking": [
+            "Document [4] concludes that tirilazad is a promising drug for the treatment of patients with aneurysmal subarachnoid haemorrhage. Document [9] applies Bayesian neural networks to data from five trials of Tirilazad for aneurysmal subarachnoid hemorrhage and finds no effect on clinical outcome but a decrease in symptomatic vasospasm. However, the absence of evidence suggesting that tirilazad is ineffective does not necessarily mean it is effective. Document [12] also reports no effect on clinical outcome for tirilazad in five trials of aneurysmal subarachnoid hemorrhage. Given these conflicting findings, further research and evidence are needed to definitively conclude that tirilazad is effective for the treatment of aneurysmal subarachnoid haemorrhage."
+          ],
+          "answer_choice": "A"
+        }
+      ]
+    },
+    {
+      "id": "58ec5ffaeda5a5767200000a",
+      "question": "Is dexamethasone recommended for treatment of intracerebral hemorrhage?",
+      "gt_answer": "B",
+      "pred_answer": "B",
+      "correct": true,
+      "time_seconds": 2.13,
+      "atomic_props": "None",
+      "retrieved_context": "\nDocument [1] (Title: PubMed PMID:15500570)  Dexamethasone was evaluated for the treatment of intracerebral hemorrhage using a rat model of cerebral hematoma induced by intracerebral injection of collagenase. \nDocument [2] (Title: PubMed PMID:3574383)  To evaluate the efficacy of dexamethasone for treatment of primary supratentorial intracerebral hemorrhage, we studied 93 patients 40 to 80 years old, using a double-blind randomized block design. In the light of the absence of a demonstrable beneficial effect and the presence of a significant harmful effect, current practices of using dexamethasone for treatment of primary supratentorial hemorrhage should be reconsidered. \nDocument [3] (Title: PubMed PMID:28583496)  Dexamethasone is currently recommended for routine prophylaxis against postoperative nausea and vomiting after tonsillectomy procedures. \nDocument [4] (Title: PubMed PMID:19887028)  These results indicate that a 1-mg/kg dose of dexamethasone is beneficial for treatment of intracerebral hemorrhage, particularly if administered early after the hemorrhagic insult. \nDocument [5] (Title: PubMed PMID:23037177)  Treatment of intracerebral hemorrhage is often pointless, although considerable effort has been devoted to developing treatments for ischemic stroke. These results suggest that SPZ is a potentially effective therapeutic approach for intracerebral hemorrhage as the effect of SPZ was initiated for either 1 h or 3 d post-intracerebral hemorrhage. \nDocument [6] (Title: PubMed PMID:11898571)  Treatment of intracerebral hemorrhage is based on blood pressure control, and, in selected cases, surgical evacuation of clot. \nDocument [7] (Title: PubMed PMID:17938297)  Evidence-based guidelines are presented for the diagnosis of intracerebral hemorrhage, the management of increased arterial blood pressure and intracranial pressure, the treatment of medical complications of intracerebral hemorrhage, and the prevention of recurrent intracerebral hemorrhage. Recommendations for various surgical approaches for treatment of spontaneous intracerebral hemorrhage are presented. \nDocument [8] (Title: PubMed PMID:26279658)  Generally, definitive treatment of brain arteriovenous malformations (BAVM) presenting with hemorrhage is recommended to prevent recurrent hemorrhage. \nDocument [9] (Title: PubMed PMID:34469757)  Intracerebral hemorrhage (ICH) is a severe stroke subtype with high disability and mortality, and no effective treatment is available. \nDocument [10] (Title: PubMed PMID:9444915)  Stereotactic aspiration is well known for its simplicity and safety in the surgical treatment of hypertensive intracerebral hemorrhage. \nDocument [11] (Title: PubMed PMID:30484749)  Statins are important components of secondary stroke prevention, but there is a concern they may increase the risk of intracerebral hemorrhage. \nDocument [12] (Title: PubMed PMID:20876519)  Intracerebral hemorrhage is a devastating neurological illness with few treatment options. Despite initial failures, neuroprotective agents continue to show promise in the treatment of intracerebral hemorrhage, but improvements in clinical trial design and more accurate predictive outcome models are necessary.",
+      "vote_distribution": {
+        "B": 1
+      },
+      "reasoning_traces": [
+        {
+          "answer_choice": "B",
+          "step_by_step_thinking": "{\"step_by_step_thinking\": [\"Document [4] suggests that a 1-mg/kg dose of dexamethasone is beneficial for treatment of intracerebral hemorrhage. However, this benefit seems to be conditional on early administration after the hemorrhagic insult. Document [2] states that current practices of using dexamethasone for treatment of primary supratentorial hemorrhage should be reconsidered due to a significant harmful effect. Therefore, while there is evidence supporting its use in certain circumstances, the overall consensus seems to lean towards not recommending dexamethasone for routine treatment of intracerebral hemorrhage.\", \"answer_choice\": \"B\"}"
+        }
+      ]
+    },
+    {
+      "id": "58ec613ceda5a5767200000b",
+      "question": "Is airplane stroke syndrome a common disease.",
+      "gt_answer": "B",
+      "pred_answer": "B",
+      "correct": true,
+      "time_seconds": 0.97,
+      "atomic_props": "None",
+      "retrieved_context": "\nDocument [1] (Title: PubMed PMID:11914416)  \"Economy class\" stroke syndrome may be underdiagnosed and is an eminently preventable cause of stroke. \nDocument [2] (Title: PubMed PMID:27634705)  The occurrence of an acute stroke syndrome during a long-distance flight demands critical decisions from the crew and attendant physicians. Endovascular treatment of a severe stroke occurring in a commercial airplane over the Sahara. \nDocument [3] (Title: PubMed PMID:31781974)  High altitude headache is a common neurological symptom that is associated with ascent to high altitude. \nDocument [4] (Title: PubMed PMID:12368703)  Stroke is the most common neurologic complication of sickle cell disease. Acute chest syndrome (ACS) is a known risk factor for stroke in this population. \nDocument [5] (Title: PubMed PMID:23412285)  We describe the injuries of survivors of an airplane accident and present a common mechanism of trauma for victims. \nDocument [6] (Title: PubMed PMID:34247053)  Ischemic stroke and hemorrhagic stroke are the most common sequelae of the Moyamoya variants [Moyamoya disease (MMD) and syndrome (MMS)]. \nDocument [7] (Title: PubMed PMID:29179528)  POEMS syndrome is a rare multi-systemic disease characterized by polyneuropathy, organomegaly, endocrinopathy, monoclonal gammopathy, and skin changes. The common clinical manifestations of POEMS syndrome were rather non-specific in patients with ischemic stroke compared with those of patients without ischemic stroke. \nDocument [8] (Title: PubMed PMID:8610326)  Although neurological complications of human immunodeficiency virus (HIV) infection are common, the presence of cerebrovascular disease (CVD) has been seldom reported. Forty percent had a neurological complication, but only 1.3% had a stroke syndrome. \nDocument [9] (Title: PubMed PMID:26095523)  MELAS syndrome is a multi-organ disease with broad manifestations including stroke-like episodes, dementia, epilepsy, lactic acidemia, myopathy, recurrent headaches, hearing impairment, diabetes, and short stature. There is no specific consensus approach for treating MELAS syndrome. \nDocument [10] (Title: PubMed PMID:25673072)  Prognostication of stroke victims rests mainly on admission clinical and radiological indexes of disease severity. \nDocument [11] (Title: PubMed PMID:21626019)  Headache related to airplane flights is rare.",
+      "vote_distribution": {
+        "B": 1
+      },
+      "reasoning_traces": [
+        {
+          "step_by_step_thinking": "While there are documented cases of stroke occurring during flights (Document [2]), the evidence does not suggest that airplane stroke syndrome is a common disease. The absence of explicit evidence supporting its commonality leads us to conclude that it is likely uncommon.",
+          "answer_choice": "B"
+        }
+      ]
+    }
+  ]
+}

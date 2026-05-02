@@ -297,13 +297,12 @@ class PubMedDenseRetriever:
 
     def _load_local_index(self):
         index_path = os.path.join(self.local_index_dir, "pubmed.faiss")
-        metadata_path = os.path.join(
-            self.local_index_dir, "pubmed_chunks.json")
+        metadata_path = os.path.join(self.local_index_dir, "pubmed_meta.db")
 
         if not os.path.exists(index_path) or not os.path.exists(metadata_path):
             log.warning(
                 f"Local index not found at {self.local_index_dir}. "
-                f"Run build_pubmed_index.py first. Will fall back to API."
+                f"Run build_sqlite_meta.py first. Will fall back to API."
             )
             return
 
@@ -312,11 +311,7 @@ class PubMedDenseRetriever:
             log.info(f"Loading FAISS index from {index_path}...")
             self._faiss_index = faiss.read_index(index_path)
             log.info(f"FAISS index loaded: {self._faiss_index.ntotal} vectors")
-
-            log.info(f"Loading chunk metadata from {metadata_path}...")
-            with open(metadata_path) as f:
-                self._chunks = json.load(f)
-            log.info(f"Loaded {len(self._chunks)} chunk records")
+            self._chunks = "sqlite"
 
         except Exception as e:
             log.error(f"Failed to load local index: {e}")
@@ -350,18 +345,35 @@ class PubMedDenseRetriever:
             ).astype("float32")
 
         # FAISS inner product search (embeddings are normalized → cosine sim)
+        if hasattr(self._faiss_index, "nprobe"):
+            self._faiss_index.nprobe = max(16, getattr(self._faiss_index, "nprobe", 16))
+            
         scores, indices = self._faiss_index.search(q_emb, k)
         scores = scores[0].tolist()
         indices = indices[0].tolist()
 
+        import sqlite3
+        conn = sqlite3.connect(os.path.join(self.local_index_dir, "pubmed_meta.db"))
+        c = conn.cursor()
+
         docs, final_scores = [], []
         for idx, score in zip(indices, scores):
-            if idx < 0 or idx >= len(self._chunks):
+            if idx < 0 or idx >= self._faiss_index.ntotal:
                 continue
-            chunk = self._chunks[idx].copy()
-            docs.append(chunk)
-            final_scores.append(float(score))
+            
+            # FAISS index is 0-indexed, SQLite rowid is 1-indexed
+            c.execute("SELECT title, content, pmid, source FROM chunks WHERE rowid = ?", (idx + 1,))
+            row = c.fetchone()
+            if row:
+                docs.append({
+                    "title": row[0],
+                    "content": row[1],
+                    "pmid": row[2],
+                    "source": row[3]
+                })
+                final_scores.append(float(score))
 
+        conn.close()
         return docs, final_scores
 
     # ── API fallback ─────────────────────────────────────────────────────────

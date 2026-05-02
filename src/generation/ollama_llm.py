@@ -41,16 +41,22 @@ class OllamaLLM:
 
     def generate(self, messages: list, **kwargs) -> str:
         try:
+            format_out = kwargs.pop("format", None)
             opts = {
                 "temperature": self.temperature,
                 "num_predict": self.max_new_tokens,
             }
             opts.update(kwargs)  # allow caller to override temperature etc.
-            resp = self.client.chat(
-                model=self.model_name,
-                messages=messages,
-                options=opts
-            )
+            
+            chat_kwargs = {
+                "model": self.model_name,
+                "messages": messages,
+                "options": opts
+            }
+            if format_out:
+                chat_kwargs["format"] = format_out
+                
+            resp = self.client.chat(**chat_kwargs)
             return resp["message"]["content"].strip()
         except Exception as e:
             log.error(f"Ollama generation error: {e}")

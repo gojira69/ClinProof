@@ -103,8 +103,32 @@ def build_stats(results):
 
     times = [r["time_seconds"] for r in results if "time_seconds" in r]
 
+    # Metrics
+    classes = set(r["gt_answer"] for r in results) | set(r.get("pred_answer") for r in results if "pred_answer" in r)
+    metrics = {}
+    macro_p = macro_r = macro_f1 = 0.0
+    for c in classes:
+        tp = sum(1 for r in results if r.get("pred_answer") == c and r["gt_answer"] == c)
+        fp = sum(1 for r in results if r.get("pred_answer") == c and r["gt_answer"] != c)
+        fn = sum(1 for r in results if r.get("pred_answer") != c and r["gt_answer"] == c)
+        
+        p = tp / (tp + fp) if (tp + fp) > 0 else 0.0
+        r = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+        f1 = 2 * p * r / (p + r) if (p + r) > 0 else 0.0
+        
+        metrics[c] = {"p": p, "r": r, "f1": f1}
+        macro_p += p; macro_r += r; macro_f1 += f1
+        
+    n_class = len(classes)
+    macro_metrics = {
+        "p": macro_p / n_class if n_class else 0,
+        "r": macro_r / n_class if n_class else 0,
+        "f1": macro_f1 / n_class if n_class else 0,
+    }
+
     return {
         "total": total, "correct": correct, "acc": pct(correct, total),
+        "class_metrics": metrics, "macro_metrics": macro_metrics,
         "src_acc": src_acc, "src_total": dict(src_total),
         "kg_count": len(kg_res), "kg_acc": kg_acc, "avg_ctx_kg": avg_ctx_kg,
         "nkg_count": len(no_kg), "nkg_acc": nkg_acc, "avg_ctx_nkg": avg_ctx_nkg,
@@ -141,12 +165,23 @@ def analyze(path, baseline_path=None):
     print(f"{'='*W}\n")
 
     # ── 1. Overall accuracy ───────────────────────────────────────────────
-    print(f"── 1. OVERALL ACCURACY")
+    print(f"── 1. OVERALL ACCURACY & METRICS")
     if has_baseline:
         print(f"   NEW      {s['correct']}/{s['total']}  =  {s['acc']:.1f}%  {delta(s['acc'], b['acc'])}")
         print(f"   BASELINE {b['correct']}/{b['total']}  =  {b['acc']:.1f}%")
+        print(f"\n   [MACRO]    NEW  P: {s['macro_metrics']['p']*100:.1f}% | R: {s['macro_metrics']['r']*100:.1f}% | F1: {s['macro_metrics']['f1']*100:.1f}%")
+        print(f"         BASELINE  P: {b['macro_metrics']['p']*100:.1f}% | R: {b['macro_metrics']['r']*100:.1f}% | F1: {b['macro_metrics']['f1']*100:.1f}%")
     else:
         print(f"   {s['correct']}/{s['total']}  =  {s['acc']:.1f}%")
+        print(f"\n   [MACRO] Precision: {s['macro_metrics']['p']*100:.1f}% | Recall: {s['macro_metrics']['r']*100:.1f}% | F1: {s['macro_metrics']['f1']*100:.1f}%")
+
+    print(f"   [PER-CLASS]:")
+    for c, ms in sorted(s['class_metrics'].items()):
+        if has_baseline and c in b['class_metrics']:
+            bc = b['class_metrics'][c]
+            print(f"     Class '{c}': NEW (P:{ms['p']*100:4.1f}% R:{ms['r']*100:4.1f}% F1:{ms['f1']*100:4.1f}%)  BASE (P:{bc['p']*100:4.1f}% R:{bc['r']*100:4.1f}% F1:{bc['f1']*100:4.1f}%)")
+        else:
+            print(f"     Class '{c}':  P: {ms['p']*100:5.1f}% | R: {ms['r']*100:5.1f}% | F1: {ms['f1']*100:5.1f}%")
     print()
 
     # ── 2. Context source breakdown ───────────────────────────────────────

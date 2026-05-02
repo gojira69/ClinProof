@@ -97,17 +97,22 @@ class MoERetriever:
 
         # ── GraphRAG (always used) ───────────────────────────────────────────
         if self.graph:
-            original_hops      = self.graph.max_hops
+            original_hops      = getattr(self.graph, "max_hops", 2)
             self.graph.max_hops = max_hops
             try:
-                docs, scores = self.graph.retrieve(
+                res = self.graph.retrieve(
                     query, k=k1, options=options,
                     domain_edge_priority=priority_edges
                 )
             except TypeError:
-                docs, scores = self.graph.retrieve(query, k=k1, options=options)
+                res = self.graph.retrieve(query, k=k1, options=options)
             finally:
                 self.graph.max_hops = original_hops
+                
+            if len(res) >= 2:
+                docs, scores = res[0], res[1]
+            else:
+                docs, scores = [], []
             # Graph weight: higher for pharmacology/anatomy (structured data advantage),
             # slightly lower for clinical where PubMed abstracts shine
             graph_w = 0.6 if domain in ("pharmacology", "anatomy") else 0.45
