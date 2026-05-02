@@ -591,6 +591,8 @@ if __name__ == "__main__":
                         help="Disable BM25 stage-1 pre-filtering")
     parser.add_argument("--no-pubmed", action="store_true",
                         help="Disable MedCPT/PubMed dense retriever")
+    parser.add_argument("--use-pubmed", action="store_true",
+                        help="Enable MedCPT/PubMed FAISS dense retriever (Stage-2 semantic)")
     parser.add_argument("--use-graph", action="store_true",
                         help="Enable GraphRAG KG retriever")
     parser.add_argument("--no-kg", action="store_true",
@@ -625,6 +627,7 @@ if __name__ == "__main__":
     if args.tag:           CONFIG["tag"]           = args.tag
     if args.no_bm25:       CONFIG["use_bm25"]      = False
     if args.no_pubmed:     CONFIG["use_pubmed"]    = False
+    if args.use_pubmed:    CONFIG["use_pubmed"]    = True   # --use-pubmed wins over default False
     if args.use_graph:     CONFIG["use_graph"]     = True
     if args.no_kg:         CONFIG["use_graph"]     = False   # --no-kg wins
     if args.no_resume:     CONFIG["resume"]        = False

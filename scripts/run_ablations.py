@@ -135,7 +135,6 @@ EXPERIMENTS: List[Experiment] = [
         description="RAG + KG (MedCPT + GraphRAG, no BM25)",
         models=["qwen2.5:14b"],
         votes=3, no_kg=False, no_bm25=True, use_pubmed=True,
-        extra_flags=["--use-graph"],
     ),
     Experiment(
         tag="B3_dense_bm25",
@@ -152,7 +151,6 @@ EXPERIMENTS: List[Experiment] = [
         description="Full Pipeline (MedCPT + KG + BM25)",
         models=["qwen2.5:14b"],
         votes=3, no_kg=False, no_bm25=False, use_pubmed=True,
-        extra_flags=["--use-graph"],
     ),
 
     # ==========================================================================
@@ -282,6 +280,114 @@ EXPERIMENTS: List[Experiment] = [
         recency_bm25=True, recency_alpha=0.3,
         datasets=["medchangeqa"],
     ),
+
+    # ==========================================================================
+    # EXP G1: Recency BM25 Recalibration (MedChangeQA ONLY)
+    # -----------------------------------------------------------------------
+    # ROOT CAUSE FIX applied before these runs:
+    #   The textbook corpus has NO per-doc year metadata (only title/content/PMID).
+    #   _extract_year previously returned None for 100% of docs, so all recency
+    #   weights were 1.0 — a literal no-op. Fix: TEXTBOOK_EDITION_YEARS lookup
+    #   in src/retrieval/bm25_retriever.py maps textbook title → edition year.
+    #   The BM25 cache (textbooks_bm25.pkl) must be deleted before running so
+    #   it rebuilds with correct year assignments.
+    #
+    # Year range after fix: 2013 (DSM-5) – 2022 (Harrison's 21st ed.)
+    # Hypothesis: after fix, mild alpha (0.1-0.3) improves REFUTED recall
+    #   by preferring newer Harrison's/Robbins chunks over older textbooks.
+    # ==========================================================================
+    Experiment(
+        tag="G1a_recency_a0.1",
+        experiment_id="G1a",
+        group="G1",
+        description="[FIXED] BM25 + recency alpha=0.1 (very mild, with edition-year metadata)",
+        models=["qwen2.5:14b"],
+        votes=3, no_kg=True,
+        recency_bm25=True, recency_alpha=0.1,
+        datasets=["medchangeqa"],
+    ),
+    Experiment(
+        tag="G1b_recency_a0.2",
+        experiment_id="G1b",
+        group="G1",
+        description="[FIXED] BM25 + recency alpha=0.2 (mild)",
+        models=["qwen2.5:14b"],
+        votes=3, no_kg=True,
+        recency_bm25=True, recency_alpha=0.2,
+        datasets=["medchangeqa"],
+    ),
+    Experiment(
+        tag="G1c_recency_a0.3",
+        experiment_id="G1c",
+        group="G1",
+        description="[FIXED] BM25 + recency alpha=0.3 (re-run of C2 with correct metadata)",
+        models=["qwen2.5:14b"],
+        votes=3, no_kg=True,
+        recency_bm25=True, recency_alpha=0.3,
+        datasets=["medchangeqa"],
+    ),
+    Experiment(
+        tag="G1d_recency_a0.5",
+        experiment_id="G1d",
+        group="G1",
+        description="[FIXED] BM25 + recency alpha=0.5 (moderate)",
+        models=["qwen2.5:14b"],
+        votes=3, no_kg=True,
+        recency_bm25=True, recency_alpha=0.5,
+        datasets=["medchangeqa"],
+    ),
+    Experiment(
+        tag="G1e_recency_a0.7",
+        experiment_id="G1e",
+        group="G1",
+        description="[FIXED] BM25 + recency alpha=0.7 (re-run of C3 with correct metadata)",
+        models=["qwen2.5:14b"],
+        votes=3, no_kg=True,
+        recency_bm25=True, recency_alpha=0.7,
+        datasets=["medchangeqa"],
+    ),
+    Experiment(
+        tag="G1f_recency_a1.0",
+        experiment_id="G1f",
+        group="G1",
+        description="[FIXED] BM25 + recency alpha=1.0 (full recency override)",
+        models=["qwen2.5:14b"],
+        votes=3, no_kg=True,
+        recency_bm25=True, recency_alpha=1.0,
+        datasets=["medchangeqa"],
+    ),
+
+    # ==========================================================================
+    # EXP G2: NEI Calibration (MedChangeQA ONLY)
+    # -----------------------------------------------------------------------
+    # Problem: NEI class has 0% recall across ALL MedChangeQA runs.
+    # The model never predicts "NOT ENOUGH INFORMATION" despite it being 31%
+    # of the gold labels. This is the single biggest bottleneck on this dataset.
+    #
+    # Fix: prompt-level forcing via --nei-threshold flag in eval_all.py.
+    # G2a: explicit prompt instruction to use NEI when evidence is contradictory.
+    # G2b: confidence-based abstention — if max_vote_frac < 0.67 → predict NEI.
+    # ==========================================================================
+    Experiment(
+        tag="G2a_nei_prompt_forced",
+        experiment_id="G2a",
+        group="G2",
+        description="NEI calibration: explicit prompt instruction to use NEI on insufficient evidence",
+        models=["qwen2.5:14b"],
+        votes=3, no_kg=True,
+        extra_flags=["--nei-forced"],
+        datasets=["medchangeqa"],
+    ),
+    Experiment(
+        tag="G2b_nei_confidence_threshold",
+        experiment_id="G2b",
+        group="G2",
+        description="NEI calibration: predict NEI when ensemble confidence < 0.67 (split vote)",
+        models=["qwen2.5:14b"],
+        votes=3, no_kg=True,
+        extra_flags=["--nei-threshold", "0.67"],
+        datasets=["medchangeqa"],
+    ),
 ]
 
 # ── Command Builder ───────────────────────────────────────────────────────────
@@ -296,9 +402,8 @@ def build_cmd(exp: Experiment, dataset: str, results_dir: str) -> str:
         f"--tag {tag}",
         f"--votes {exp.votes}",
         f"--experiment-id {exp.experiment_id}",
-        # NOTE: eval_all.py doesn't have --results-dir yet; handled below
         f"--results-dir {results_dir}",
-        "--no-pubmed",   # never use PubMed API in ablations (speed)
+        # --use-pubmed / --no-pubmed is added conditionally below based on exp.use_pubmed
     ]
 
     # Models: single or ensemble
@@ -349,11 +454,11 @@ def run_experiment(exp: Experiment, dataset: str, results_dir: str,
         + cmd
     )
 
-    print(f"\n{'─'*70}")
+    print(f"\n{'-'*70}")
     print(f"  [{exp.experiment_id}] {exp.description}")
     print(f"  Dataset : {dataset}")
     print(f"  CMD     : {full_cmd}")
-    print(f"{'─'*70}")
+    print(f"{'-'*70}")
 
     if not dry_run:
         ret = subprocess.run(
@@ -372,7 +477,7 @@ if __name__ == "__main__":
         description="ClinProof Ablation Experiment Runner"
     )
     parser.add_argument("--group",    default="A",
-                        help="Experiment group(s) to run: A, B, C, D, or 'all' (default: A)")
+                        help="Experiment group(s) to run: A, B, C, D, E, F, G1, G2, or 'all' (default: A)")
     parser.add_argument("--datasets", nargs="+",
                         default=["bioasq", "healthfc", "scifact"],
                         choices=["medchangeqa", "bioasq",
@@ -404,7 +509,7 @@ if __name__ == "__main__":
 
     # Filter experiments
     groups = [g.strip().upper() for g in args.group.split(
-        ",")] if args.group != "all" else ["A", "B", "C", "D", "E", "F"]
+        ",")] if args.group.lower() != "all" else ["A", "B", "C", "D", "E", "F", "G1", "G2"]
     selected = [
         exp for exp in EXPERIMENTS
         if exp.group in groups
