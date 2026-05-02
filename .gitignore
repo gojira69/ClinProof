@@ -2,6 +2,28 @@
 data/
 logs/
 pubmed_download/
+results/
+
+# Old log files
+*.log
+*log*.txt
+
+# Old Evaluation Scripts
+eval_medchangeqa.py
+eval_medcite.py
+eval_medrag.py
+eval_medrevqa.py
+eval_universal.py
+
+# Old Reports
+sort_of_report.md
+v4.md
+v5.md
+v5_corrected.md
+evaluation_report.md
+
+# Old Analysis Scripts
+scripts/analyze_results_v4.py
 # Python Cache
 __pycache__/
 *.py[cod]
