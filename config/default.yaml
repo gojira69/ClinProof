@@ -32,8 +32,8 @@ citation:
   mode: "pubmed"            # pubmed | none  (no LLM re-ranking, just PMID attachment)
 
 kg:
-  db_path: "/mnt/d/Harsha/AoLM/project/clinproof/data/clinproof_kg.db"
-  graph_path: "/mnt/d/Harsha/AoLM/project/clinproof/data/kg_graph.pkl"
+  db_path: "/mnt/d/Harsha/AoLM/ClinProof/data/clinproof_kg.db"
+  graph_path: "/mnt/d/Harsha/AoLM/ClinProof/data/kg_graph.pkl"
   umls_data_path: "/mnt/d/Harsha/AoLM/project/data/umls-2025AB-metathesaurus-full/2025AB/META"
   snomed_data_path: "/mnt/d/Harsha/AoLM/project/data/SnomedCT_InternationalRF2_PRODUCTION_20260201T120000Z/SnomedCT_InternationalRF2_PRODUCTION_20260201T120000Z/Snapshot/Terminology"
   rxnorm_data_path: "/mnt/d/Harsha/AoLM/project/data/RxNorm_full_02022026/rrf"
@@ -41,11 +41,12 @@ kg:
 pubmed:
   email: "sriharsha4002@gmail.com"
   api_key: ""
-  cache_dir: "/mnt/d/Harsha/AoLM/project/clinproof/data/pubmed_cache"
+  cache_dir: "/mnt/d/Harsha/AoLM/ClinProof/data/pubmed_cache"
+  local_index_dir: "/mnt/d/Harsha/AoLM/ClinProof/data/pubmed_index"
   max_results: 20
 
 corpus:
-  dir: "/mnt/d/Harsha/AoLM/project/clinproof/data/corpus"
+  dir: "/mnt/d/Harsha/AoLM/ClinProof/data/corpus"
   sources: ["textbooks", "statpearls", "pubmed"]
 
 evaluation:
@@ -53,8 +54,8 @@ evaluation:
   gemini_model: "gemini-2.0-flash"
   gemini_api_key: ""        # or set GOOGLE_API_KEY env var
   datasets: ["medqa_us", "medmcqa", "pubmedqa", "mmlu_med"]
-  results_dir: "/mnt/d/Harsha/AoLM/project/clinproof/results"
+  results_dir: "/mnt/d/Harsha/AoLM/ClinProof/results"
 
 paths:
-  project_root: "/mnt/d/Harsha/AoLM/project/clinproof"
-  logs_dir: "/mnt/d/Harsha/AoLM/project/clinproof/logs"
+  project_root: "/mnt/d/Harsha/AoLM/ClinProof"
+  logs_dir: "/mnt/d/Harsha/AoLM/ClinProof/logs"
