@@ -59,8 +59,11 @@ def _is_junk_label(label):
 
 
 def load_graph(graph_path):
+    log.info(f"1 Loading graph from {graph_path}...")
     with open(graph_path, "rb") as f:
+        print(f"Loading graph from {graph_path}...")
         return pickle.load(f)
+
 
 
 class EntityLinker:
@@ -212,6 +215,7 @@ class GraphRetriever:
     def __init__(self, graph_path, config, llm=None):
         log.info("Loading Knowledge Graph...")
         self.G = load_graph(graph_path)
+        log.info(f"Graph loaded: {self.G.number_of_nodes()} nodes, {self.G.number_of_edges()} edges")
         self.linker = EntityLinker(self.G)
         self.max_hops = config.get("retrieval", {}).get(
             "multihop", {}).get("max_hops", 2)
