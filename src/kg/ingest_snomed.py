@@ -3,6 +3,12 @@ ClinProof KG Ingestion: SNOMED CT RF2 Snapshot -> SQLite
 """
 import sqlite3, os, sys, logging
 from tqdm import tqdm
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from src.utils.paths import load_yaml_config, project_path
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("ingest_snomed")
@@ -104,7 +110,6 @@ def run(snomed_dir, db_path, umls_meta_dir=None):
     log.info("SNOMED ingestion complete.")
 
 if __name__ == "__main__":
-    import yaml
-    cfg_path = sys.argv[1] if len(sys.argv) > 1 else "config/default.yaml"
-    cfg = yaml.safe_load(open(cfg_path))
+    cfg_path = sys.argv[1] if len(sys.argv) > 1 else project_path("config", "default.yaml")
+    cfg = load_yaml_config(cfg_path)
     run(cfg["kg"]["snomed_data_path"], cfg["kg"]["db_path"], cfg["kg"]["umls_data_path"])

@@ -1,7 +1,15 @@
 from collections import Counter
 import pickle
+from pathlib import Path
+import sys
 
-G = pickle.load(open("../data/kg_graph.pkl", "rb"))
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from src.utils.paths import project_path
+
+with open(project_path("data", "kg_graph.pkl"), "rb") as handle:
+    G = pickle.load(handle)
 
 # What semantic types exist?
 sty_counts = Counter(d.get("sty","unknown") for _, d in G.nodes(data=True))

@@ -1,11 +1,17 @@
 #!/usr/bin/env python3
 """Launch KG ingestion as a subprocess."""
 import subprocess, sys, os
+from pathlib import Path
 
-cfg = sys.argv[1] if len(sys.argv) > 1 else "/mnt/d/Harsha/AoLM/project/clinproof/config/default.yaml"
-log_dir = "/mnt/d/Harsha/AoLM/project/clinproof/logs"
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from src.utils.paths import project_path
+
+cfg = sys.argv[1] if len(sys.argv) > 1 else project_path("config", "default.yaml")
+log_dir = project_path("logs")
 os.makedirs(log_dir, exist_ok=True)
-src = "/mnt/d/Harsha/AoLM/project/clinproof/src/kg"
+src = project_path("src", "kg")
 
 scripts = [
     # ("ingest_umls.py",   "ingest_umls.log"),

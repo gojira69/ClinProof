@@ -1,11 +1,18 @@
 import json
 import random
+from pathlib import Path
+import sys
+
+PROJECT_ROOT = Path(__file__).resolve().parent
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from src.utils.paths import project_path
 
 random.seed(42)
 
-input_path = '/mnt/d/Harsha/AoLM/ClinProof/data/processed/BioASQ-training7b/trainining7b.json'
-out_train = '/mnt/d/Harsha/AoLM/ClinProof/data/processed/BioASQ-training7b/train.json'
-out_test = '/mnt/d/Harsha/AoLM/ClinProof/data/processed/BioASQ-training7b/test.json'
+input_path = project_path("data", "BioASQ-training13b", "training13b.json")
+out_train = project_path("data", "BioASQ-training13b", "train.json")
+out_test = project_path("data", "BioASQ-training13b", "test.json")
 
 print("Loading BioASQ data...")
 with open(input_path, 'r', encoding='utf-8') as f:

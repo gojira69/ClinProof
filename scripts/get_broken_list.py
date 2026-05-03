@@ -3,9 +3,16 @@ import gzip
 import zlib
 import logging
 from tqdm import tqdm
+from pathlib import Path
+import sys
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from src.utils.paths import project_path
 
 # Update this path if your directory structure has changed
-XML_DIR = "/mnt/d/Harsha/AoLM/project/clinproof/pubmed_download/pubmed_abstracts/"
+XML_DIR = project_path("pubmed_download", "pubmed_abstracts")
 
 def verify_stream_integrity(directory):
     if not os.path.exists(directory):

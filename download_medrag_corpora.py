@@ -1,8 +1,12 @@
 import sys, os
 import logging
+from pathlib import Path
 
 # Add MedRAG to path
-sys.path.insert(0, "/mnt/d/Harsha/AoLM/project/MedRAG/src")
+PROJECT_ROOT = Path(__file__).resolve().parent
+MEDRAG_SRC = Path(os.environ.get("MEDRAG_SRC_DIR", PROJECT_ROOT / "external" / "MedRAG" / "src"))
+MEDRAG_CORPUS_DIR = Path(os.environ.get("MEDRAG_CORPUS_DIR", PROJECT_ROOT / "data" / "medrag_corpus"))
+sys.path.insert(0, str(MEDRAG_SRC))
 from medrag import MedRAG
 
 logging.getLogger('httpx').setLevel(logging.WARNING)
@@ -23,7 +27,7 @@ def main():
         rag=True, 
         retriever_name="MedCPT", 
         corpus_name="MedCorp", 
-        db_dir="/mnt/d/Harsha/AoLM/project/MedRAG/corpus",
+        db_dir=str(MEDRAG_CORPUS_DIR),
         corpus_cache=True # Also builds the cache index (id2text.json)
     )
 

@@ -1,7 +1,14 @@
 import pickle
+from pathlib import Path
+import sys
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from src.utils.paths import project_path
 
 print("Loading KG...")
-with open('/mnt/d/Harsha/AoLM/project/clinproof/data/kg_graph.pkl', 'rb') as f:
+with open(project_path("data", "kg_graph.pkl"), "rb") as f:
     G = pickle.load(f)
 
 carvedilol_nodes = [n for n, d in G.nodes(data=True) if str(d.get('label')).lower() == 'carvedilol']

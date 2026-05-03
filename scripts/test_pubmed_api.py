@@ -1,11 +1,14 @@
 import sys
 import os
 import json
+from pathlib import Path
 
 # Add the project root to the python path so imports work
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+sys.path.append(str(PROJECT_ROOT))
 
 from src.retrieval.pubmed_api_retriever import PubMedAPIRetriever
+from src.utils.paths import project_path
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -16,7 +19,7 @@ def test_pubmed_api():
             "email": "test@example.com",
             "api_key": "",
             "max_results": 10, # How many articles to fetch from NCBI Entrez
-            "cache_dir": "./data/pubmed_cache"
+            "cache_dir": project_path("data", "pubmed_cache")
         }
     }
     

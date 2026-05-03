@@ -31,13 +31,16 @@ import argparse
 import textwrap
 from collections import Counter, defaultdict
 from typing import Optional
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
 # ── Project path ──────────────────────────────────────────────────────────────
-PROJECT_ROOT = "/mnt/d/Harsha/AoLM/ClinProof"
-sys.path.insert(0, PROJECT_ROOT)
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from src.utils.paths import project_path
 
 # ── SOTA Reference Table (from literature) ───────────────────────────────────
 SOTA = {
@@ -513,7 +516,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="ClinProof Comprehensive Results Analyzer"
     )
-    parser.add_argument("--results-dir", default=f"{PROJECT_ROOT}/results/v4",
+    parser.add_argument("--results-dir", default=project_path("results", "v4"),
                         help="Directory containing result JSON files")
     parser.add_argument("--filter-tag",  type=str, default=None,
                         help="Only analyze files containing this string")

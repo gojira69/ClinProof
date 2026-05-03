@@ -4,9 +4,14 @@ Pre-build BM25 index from downloaded textbooks corpus.
 Run this while KG ingestion is happening - it's CPU-only and independent.
 """
 import sys, os, time
-sys.path.insert(0, "/mnt/d/Harsha/AoLM/project/clinproof")
+from pathlib import Path
 
-corpus_dir = "/mnt/d/Harsha/AoLM/project/clinproof/data/corpus"
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from src.utils.paths import project_path
+
+corpus_dir = project_path("data", "corpus")
 
 for corpus_name in ["textbooks", "statpearls"]:
     chunk_dir = os.path.join(corpus_dir, corpus_name, "chunk")

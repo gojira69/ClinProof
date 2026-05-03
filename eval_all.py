@@ -22,17 +22,19 @@ Run:
   python eval_all.py --dataset bioasq --model qwen2.5:14b --k 30 --votes 3
 """
 
-import sys, os, json, yaml, time, argparse, logging
+import sys, os, json, time, argparse, logging
 from collections import Counter
 from typing import Optional
+from pathlib import Path
 
 import pandas as pd
 from tqdm import tqdm
 
-# ── WSL project path ──────────────────────────────────────────────────────────
-PROJECT_ROOT = "/mnt/d/Harsha/AoLM/ClinProof"
-DATA_ROOT    = "/mnt/d/Harsha/AoLM/ClinProof/data/processed"
-sys.path.insert(0, PROJECT_ROOT)
+# ── Project paths ─────────────────────────────────────────────────────────────
+PROJECT_ROOT = Path(__file__).resolve().parent
+DATA_ROOT = PROJECT_ROOT / "data"
+PROCESSED_ROOT = DATA_ROOT / "processed"
+sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.retrieval.bm25_retriever      import BM25Retriever
 from src.retrieval.pubmed_dense_retriever import PubMedDenseRetriever
@@ -40,6 +42,7 @@ from src.retrieval.graph_retriever     import GraphRetriever, AtomicDecomposer
 from src.retrieval.moe_retriever       import MoERetriever
 from src.compression.extractor         import ExtractiveCompressor
 from src.generation.ollama_llm         import OllamaLLM
+from src.utils.paths import load_yaml_config, project_path
 
 # ── Logging ───────────────────────────────────────────────────────────────────
 logging.basicConfig(
@@ -71,20 +74,51 @@ CONFIG = {
     "resume":           True,            # Resume from checkpoint on interruption
     "checkpoint_every": 1,              # Checkpoint frequency (questions)
     "tag":              "fullpower_v1",  # Output file tag
-    "results_dir":      f"{PROJECT_ROOT}/results",
+    "results_dir":      project_path("results"),
     "experiment_id":    "",             # Optional experiment identifier for cross-run analysis
 }
 
 # ─── Dataset Paths ────────────────────────────────────────────────────────────
 DATASET_PATHS = {
-    "medqa":         f"{DATA_ROOT}/medqa-dataset/data_clean/questions/US/test.jsonl",
-    "medchangeqa":   f"{DATA_ROOT}/MedChange-main/Datasets/MedChangeQA.csv",
-    "bioasq":        f"{DATA_ROOT}/BioASQ-training7b/test.json",
-    "scifact_test":  f"{DATA_ROOT}/scifact/claims_test.csv",
-    "scifact_train": f"{DATA_ROOT}/scifact/claims_train.csv",
-    "healthfc_test":  f"{DATA_ROOT}/healthfc_test.csv",
-    "healthfc_train": f"{DATA_ROOT}/healthfc_train.csv",
+    "medqa": [
+        DATA_ROOT / "medqa-dataset" / "data_clean" / "questions" / "US" / "test.jsonl",
+        PROCESSED_ROOT / "medqa-dataset" / "data_clean" / "questions" / "US" / "test.jsonl",
+    ],
+    "medchangeqa": [
+        DATA_ROOT / "MedChangeQA.csv",
+        PROCESSED_ROOT / "MedChange-main" / "Datasets" / "MedChangeQA.csv",
+    ],
+    "bioasq": [
+        DATA_ROOT / "BioASQ-training13b" / "test.json",
+        DATA_ROOT / "BioASQ-training13b" / "training13b.json",
+        PROCESSED_ROOT / "BioASQ-training7b" / "test.json",
+    ],
+    "scifact_test": [
+        DATA_ROOT / "scifact" / "claims_test.csv",
+        PROCESSED_ROOT / "scifact" / "claims_test.csv",
+    ],
+    "scifact_train": [
+        DATA_ROOT / "scifact" / "claims_train.csv",
+        PROCESSED_ROOT / "scifact" / "claims_train.csv",
+    ],
+    "healthfc_test": [
+        DATA_ROOT / "HealthFC.csv",
+        DATA_ROOT / "healthfc_test.csv",
+        PROCESSED_ROOT / "healthfc_test.csv",
+    ],
+    "healthfc_train": [
+        DATA_ROOT / "HealthFC.csv",
+        DATA_ROOT / "healthfc_train.csv",
+        PROCESSED_ROOT / "healthfc_train.csv",
+    ],
 }
+
+
+def resolve_dataset_path(name: str) -> str:
+    for candidate in DATASET_PATHS[name]:
+        if candidate.exists():
+            return str(candidate)
+    return str(DATASET_PATHS[name][0])
 
 # ─── Prompts ─────────────────────────────────────────────────────────────────
 MEDQA_PROMPT = """You are a board-certified physician answering a USMLE-style question.
@@ -178,7 +212,7 @@ def load_medqa(count: Optional[int]):
                  "E": ...,  "answer_idx": "C", "meta_info": "step1"}
     Options are top-level string keys A-E; answer is in "answer_idx".
     """
-    path = DATASET_PATHS["medqa"]
+    path = resolve_dataset_path("medqa")
     questions = []
     with open(path, "r", encoding="utf-8") as f:
         for i, line in enumerate(f):
@@ -207,7 +241,7 @@ def load_medchangeqa(count: Optional[int]):
     LABEL_MAP = {"SUPPORTED": "A", "REFUTED": "B", "NOT ENOUGH INFORMATION": "C"}
     OPTIONS   = {"A": "SUPPORTED", "B": "REFUTED", "C": "NOT ENOUGH INFORMATION"}
 
-    df = pd.read_csv(DATASET_PATHS["medchangeqa"])
+    df = pd.read_csv(resolve_dataset_path("medchangeqa"))
     df = df.dropna(subset=["Question", "Newest Label"])
     df = df[df["Newest Label"].isin(LABEL_MAP)].reset_index(drop=True)
 
@@ -228,7 +262,7 @@ def load_medchangeqa(count: Optional[int]):
 
 def load_bioasq(count: Optional[int]):
     """Load BioASQ-7b yes/no questions."""
-    with open(DATASET_PATHS["bioasq"], "r", encoding="utf-8") as f:
+    with open(resolve_dataset_path("bioasq"), "r", encoding="utf-8") as f:
         data = json.load(f)
 
     questions = []
@@ -261,7 +295,7 @@ def load_scifact(split: str = "test", count: Optional[int] = None):
     LABEL_MAP = {"SUPPORT": "A", "CONTRADICT": "B", "": "C"}
     OPTIONS   = {"A": "SUPPORTED", "B": "CONTRADICTED", "C": "NOT ENOUGH INFORMATION"}
 
-    path = DATASET_PATHS[f"scifact_{split}"]
+    path = resolve_dataset_path(f"scifact_{split}")
     df = pd.read_csv(path)
 
     # SciFact may have duplicate claim IDs with multiple evidence rows → deduplicate
@@ -311,7 +345,7 @@ def load_healthfc(split: str = "test", count: Optional[int] = None):
             return "B"
         return "C"   # mixture, partially true, unproven, etc. (includes "1")
 
-    path = DATASET_PATHS[f"healthfc_{split}"]
+    path = resolve_dataset_path(f"healthfc_{split}")
     df = pd.read_csv(path)
     df = df.dropna(subset=["en_claim", "label"]).reset_index(drop=True)
 
@@ -646,7 +680,7 @@ if __name__ == "__main__":
         CONFIG["models"] = [CONFIG["model"]]
 
     os.makedirs(CONFIG["results_dir"], exist_ok=True)
-    cfg = yaml.safe_load(open(f"{PROJECT_ROOT}/config/default.yaml"))
+    cfg = load_yaml_config(project_path("config", "default.yaml"))
     cfg["compression"]["enabled"] = True
 
     print("\n" + "="*70)
@@ -696,7 +730,7 @@ if __name__ == "__main__":
         log.info("Loading PubMed MedCPT dense retriever (Stage-2)...")
         # Override stale cache path from default.yaml
         cfg.setdefault("pubmed", {})
-        cfg["pubmed"]["cache_dir"] = f"{PROJECT_ROOT}/data/pubmed_cache"
+        cfg["pubmed"]["cache_dir"] = project_path("data", "pubmed_cache")
         os.makedirs(cfg["pubmed"]["cache_dir"], exist_ok=True)
         moe.pubmed = PubMedDenseRetriever(cfg)
 
@@ -704,7 +738,7 @@ if __name__ == "__main__":
     bm25 = None
     if CONFIG["use_bm25"]:
         # Always use PROJECT_ROOT — ignore stale path in default.yaml
-        corpus_dir = f"{PROJECT_ROOT}/data/corpus"
+        corpus_dir = project_path("data", "corpus")
         try:
             log.info(f"Loading BM25 retriever (Stage-1) from {corpus_dir} ...")
             bm25 = BM25Retriever(corpus_dir, corpus_name="textbooks", cache=True)

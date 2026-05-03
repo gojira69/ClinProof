@@ -19,11 +19,18 @@ import logging
 import os
 import numpy as np
 import torch
+from pathlib import Path
+import sys
 
 log = logging.getLogger("pubmed_embedding_retriever")
 
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from src.utils.paths import project_path
+
 # ── Paths ─────────────────────────────────────────────────────────────────────
-_DATA = "/mnt/d/Harsha/AoLM/project/data"
+_DATA = project_path("data")
 EMBEDDING_FILE = f"{_DATA}/PubMedBERT_embeddings_float16_2024.npy"
 METADATA_FILE  = f"{_DATA}/pubmed_landscape_data_2024_v2.csv"
 ABSTRACTS_FILE = f"{_DATA}/pubmed_landscape_abstracts_2024.csv"
@@ -251,4 +258,3 @@ class PubMedEmbeddingRetriever:
                 self._abs_file.close()
             except Exception:
                 pass
-

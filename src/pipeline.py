@@ -8,9 +8,11 @@ import json
 import logging
 import yaml
 from typing import Optional
+from pathlib import Path
 
 # Allow running from project root
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.retrieval.bm25_retriever import BM25Retriever
 from src.retrieval.dense_retriever import DenseRetriever
@@ -19,6 +21,7 @@ from src.retrieval.moe_retriever import MoERetriever
 from src.compression.extractor import ExtractiveCompressor
 from src.generation.ollama_llm import OllamaLLM
 from src.generation.citation import CitationAttacher
+from src.utils.paths import load_yaml_config, project_path
 
 log = logging.getLogger("pipeline")
 
@@ -37,12 +40,9 @@ class ClinProof:
 
     def __init__(self, config_path: str = None):
         if config_path is None:
-            # default: project_root/config/default.yaml
-            root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-            config_path = os.path.join(root, "config", "default.yaml")
+            config_path = project_path("config", "default.yaml")
 
-        with open(config_path) as f:
-            self.config = yaml.safe_load(f)
+        self.config = load_yaml_config(config_path)
 
         log.info("Initializing ClinProof pipeline...")
 

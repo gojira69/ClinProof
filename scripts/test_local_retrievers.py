@@ -1,11 +1,14 @@
 import sys
 import os
 import time
+from pathlib import Path
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+sys.path.append(str(PROJECT_ROOT))
 
 from src.retrieval.bm25_retriever import BM25Retriever
 from src.retrieval.pubmed_dense_retriever import PubMedDenseRetriever
+from src.utils.paths import project_path
 
 def test_retrievers():
     query = "Have mutations in the Polycomb group been found in human diseases?"
@@ -13,7 +16,7 @@ def test_retrievers():
     print(f"Query: '{query}'\n")
 
     # 1. Test BM25
-    corpus_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data', 'corpus'))
+    corpus_dir = project_path("data", "corpus")
     print("--- 1. Testing BM25 Retriever ---")
     t0 = time.time()
     try:
@@ -37,8 +40,8 @@ def test_retrievers():
     print("\n--- 2. Testing Local MedCPT (FAISS) Retriever ---")
     config = {
         "pubmed": {
-            "local_index_dir": os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data', 'pubmed_index')),
-            "cache_dir": os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data', 'pubmed_cache'))
+            "local_index_dir": project_path("data", "pubmed_index"),
+            "cache_dir": project_path("data", "pubmed_cache")
         }
     }
     

@@ -4,14 +4,30 @@ MedQA-US (local), MedMCQA, PubMedQA, MMLU-Medical (via HuggingFace datasets)
 """
 import os, json, logging
 from pathlib import Path
+import sys
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from src.utils.paths import project_path
 
 log = logging.getLogger("benchmarks")
-CACHE_DIR = Path("/mnt/d/Harsha/AoLM/project/clinproof/data/benchmarks")
+CACHE_DIR = Path(project_path("data", "benchmarks"))
+
+
+def _first_existing(*candidates: Path) -> Path | None:
+    return next((candidate for candidate in candidates if candidate.exists()), None)
 
 
 def load_medqa_us(split="test", **kw):
     """Load from locally-downloaded MedQA dataset."""
-    base = Path("/mnt/d/Harsha/AoLM/project/data/medqa-dataset/data_clean/questions/US")
+    base = _first_existing(
+        Path(project_path("data", "medqa-dataset", "data_clean", "questions", "US")),
+        Path(project_path("data", "processed", "medqa-dataset", "data_clean", "questions", "US")),
+    )
+    if base is None:
+        log.warning("MedQA-US dataset directory not found under data/")
+        return []
     # Try common filename patterns
     candidates = [base/f"{split}.jsonl", base/f"US_{split}.jsonl"]
     path = next((p for p in candidates if p.exists()), None)

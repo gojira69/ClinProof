@@ -7,6 +7,13 @@ import os, json, logging, hashlib, time, re
 import numpy as np
 import torch
 import requests
+from pathlib import Path
+import sys
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from src.utils.paths import project_path
 
 log = logging.getLogger("pubmed_api_retriever")
 
@@ -33,8 +40,7 @@ class PubMedAPIRetriever:
         self.email       = pm_cfg.get("email", "clinproof@example.com")
         self.api_key     = pm_cfg.get("api_key", "")
         self.max_results = pm_cfg.get("max_results", 10)
-        self.cache_dir   = pm_cfg.get("cache_dir",
-                                      "/mnt/d/Harsha/AoLM/project/clinproof/data/pubmed_cache")
+        self.cache_dir   = pm_cfg.get("cache_dir", project_path("data", "pubmed_cache"))
         os.makedirs(self.cache_dir, exist_ok=True)
 
         self.device = "cuda" if torch.cuda.is_available() else "cpu"

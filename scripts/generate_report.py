@@ -1,15 +1,22 @@
 import json, os
 from datetime import datetime
 from collections import Counter
+from pathlib import Path
+import sys
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from src.utils.paths import project_path
 
 # File paths (Relative for cross-platform safety)
 FILES = {
-    "BioASQ_Full": "results/full_bioasq_results.json",
-    "PubMedQA_Full": "results/full_pubmedqa_results.json",
-    "BioASQ_SOTA_v2": "results/univ_sota_v2_bioasq.json",
-    "PubMedQA_SOTA_v2": "results/univ_sota_v2_pubmedqa.json"
+    "BioASQ_Full": project_path("results", "full_bioasq_results.json"),
+    "PubMedQA_Full": project_path("results", "full_pubmedqa_results.json"),
+    "BioASQ_SOTA_v2": project_path("results", "univ_sota_v2_bioasq.json"),
+    "PubMedQA_SOTA_v2": project_path("results", "univ_sota_v2_pubmedqa.json")
 }
-REPORT_OUT = "evaluation_report.md"
+REPORT_OUT = project_path("evaluation_report.md")
 
 def load_data(path):
     if not os.path.exists(path):

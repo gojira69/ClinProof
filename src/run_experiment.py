@@ -6,7 +6,6 @@ import sys
 import json
 import argparse
 import logging
-import yaml
 from pathlib import Path
 
 # Add project root to path
@@ -16,6 +15,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from src.pipeline import ClinProof
 from src.evaluation.benchmarks import load_dataset_by_name
 from src.evaluation.metrics import evaluate_results, print_results_table
+from src.utils.paths import load_yaml_config
 
 logging.basicConfig(
     level=logging.INFO,
@@ -38,7 +38,7 @@ def main():
     parser.add_argument("--eval_only", default=None)
     args = parser.parse_args()
 
-    cfg = yaml.safe_load(open(args.config))
+    cfg = load_yaml_config(args.config)
     config_name = Path(args.config).stem
     results_dir = cfg.get("evaluation", {}).get("results_dir", str(PROJECT_ROOT / "results"))
     save_dir = args.save_dir or f"{results_dir}/{config_name}/{args.dataset}"

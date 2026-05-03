@@ -5,9 +5,14 @@ Downloads: textbooks, statpearls (most useful for medical QA)
 Saves as JSONL chunks ready for BM25Retriever and DenseRetriever.
 """
 import os, sys, json, time
-sys.path.insert(0, "/mnt/d/Harsha/AoLM/project/clinproof")
+from pathlib import Path
 
-CORPUS_DIR = "/mnt/d/Harsha/AoLM/project/clinproof/data/corpus"
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from src.utils.paths import project_path
+
+CORPUS_DIR = project_path("data", "corpus")
 
 # Each corpus is its own HF repo under MedRAG org
 CORPUS_HF_MAP = {

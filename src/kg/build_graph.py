@@ -5,6 +5,12 @@ Merges UMLS, SNOMED CT, and RxNorm into a unified typed knowledge graph.
 import sqlite3, pickle, os, sys, logging
 import networkx as nx
 from tqdm import tqdm
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from src.utils.paths import load_yaml_config, project_path
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("build_graph")
@@ -98,7 +104,6 @@ def load_graph(graph_path):
         return pickle.load(f)
 
 if __name__ == "__main__":
-    import yaml
-    cfg_path = sys.argv[1] if len(sys.argv) > 1 else "config/default.yaml"
-    cfg = yaml.safe_load(open(cfg_path))
+    cfg_path = sys.argv[1] if len(sys.argv) > 1 else project_path("config", "default.yaml")
+    cfg = load_yaml_config(cfg_path)
     build_graph(cfg["kg"]["db_path"], cfg["kg"]["graph_path"])

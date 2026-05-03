@@ -24,8 +24,16 @@ import torch
 
 log = logging.getLogger("hybrid_pubmed_retriever")
 
-_DATA = "/mnt/d/Harsha/AoLM/project/data"
-_CLINPROOF = "/mnt/d/Harsha/AoLM/project/clinproof"
+from pathlib import Path
+import sys
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from src.utils.paths import project_path
+
+_DATA = project_path("data")
+_CLINPROOF = project_path()
 
 EMBEDDING_FILE = f"{_DATA}/PubMedBERT_embeddings_float16_2024.npy"
 METADATA_FILE  = f"{_DATA}/pubmed_landscape_data_2024_v2.csv"
