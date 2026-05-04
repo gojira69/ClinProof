@@ -526,7 +526,13 @@ if __name__ == "__main__":
                         help="Max samples for NLI metrics (default=50)")
     parser.add_argument("--markdown",  action="store_true",
                         help="Print tables in markdown format")
+    parser.add_argument("--output", type=str, default=None,
+                        help="Optional output file path (writes directly in UTF-8 to bypass Windows console encoding issues)")
     args = parser.parse_args()
+
+    if args.output:
+        import sys
+        sys.stdout = open(args.output, "w", encoding="utf-8")
 
     analyze(
         results_dir          = args.results_dir,

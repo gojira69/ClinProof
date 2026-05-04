@@ -22,29 +22,24 @@ Run:
   python eval_all.py --dataset bioasq --model qwen2.5:14b --k 30 --votes 3
 """
 
-import sys, os, json, time, math, argparse, logging
+import sys, os, json, yaml, time, argparse, logging
 from collections import Counter
 from typing import Optional
-from pathlib import Path
 
 import pandas as pd
 from tqdm import tqdm
 
-# ── Project paths ─────────────────────────────────────────────────────────────
-PROJECT_ROOT = Path(__file__).resolve().parent
-DATA_ROOT = PROJECT_ROOT / "data"
-PROCESSED_ROOT = DATA_ROOT / "processed"
-sys.path.insert(0, str(PROJECT_ROOT))
+# ── WSL project path ──────────────────────────────────────────────────────────
+PROJECT_ROOT = "/mnt/d/Harsha/AoLM/ClinProof"
+DATA_ROOT    = "/mnt/d/Harsha/AoLM/ClinProof/data/processed"
+sys.path.insert(0, PROJECT_ROOT)
 
 from src.retrieval.bm25_retriever      import BM25Retriever
 from src.retrieval.pubmed_dense_retriever import PubMedDenseRetriever
 from src.retrieval.graph_retriever     import GraphRetriever, AtomicDecomposer
-from src.retrieval.live_web_search     import LiveWebSearchRetriever
 from src.retrieval.moe_retriever       import MoERetriever
 from src.compression.extractor         import ExtractiveCompressor
 from src.generation.ollama_llm         import OllamaLLM
-from src.evaluation.metrics            import compute_classification_metrics
-from src.utils.paths import load_yaml_config, project_path
 
 # ── Logging ───────────────────────────────────────────────────────────────────
 logging.basicConfig(
@@ -67,65 +62,29 @@ CONFIG = {
     "use_bm25":         True,            # Stage-1: BM25 keyword matching
     "use_pubmed":       False,           # Stage-2: MedCPT FAISS semantic retriever (DISABLED for now)
     "use_graph":        False,           # Stage-2+: KG GraphRAG (requires kg_graph.pkl; enable with --use-graph)
-    "enable_live_search": False,         # Optional DDGS live web evidence
-    "live_search_k":    5,
-    "live_search_region": "in-en",
     # ── Recency weighting (for MedChangeQA temporal evaluation) ─────────────
     "recency_alpha":    0.0,             # 0 = disabled; 0.3 = mild; 0.7 = strong
     # ── Context & Compression ────────────────────────────────────────────────
     "context_len":      25000,           # Larger context window for 14b model
     # ── Run Control ──────────────────────────────────────────────────────────
     "count":            None,            # None = evaluate full dataset
-    "percent":          None,            # None = evaluate full dataset; else use first N%
     "resume":           True,            # Resume from checkpoint on interruption
     "checkpoint_every": 1,              # Checkpoint frequency (questions)
     "tag":              "fullpower_v1",  # Output file tag
-    "results_dir":      project_path("results"),
+    "results_dir":      f"{PROJECT_ROOT}/results",
     "experiment_id":    "",             # Optional experiment identifier for cross-run analysis
-    "trace_pipeline":   False,          # Print question-level pipeline trace
 }
 
 # ─── Dataset Paths ────────────────────────────────────────────────────────────
 DATASET_PATHS = {
-    "medqa": [
-        DATA_ROOT / "medqa-dataset" / "data_clean" / "questions" / "US" / "test.jsonl",
-        PROCESSED_ROOT / "medqa-dataset" / "data_clean" / "questions" / "US" / "test.jsonl",
-    ],
-    "medchangeqa": [
-        DATA_ROOT / "MedChangeQA.csv",
-        PROCESSED_ROOT / "MedChange-main" / "Datasets" / "MedChangeQA.csv",
-    ],
-    "bioasq": [
-        DATA_ROOT / "BioASQ-training13b" / "test.json",
-        DATA_ROOT / "BioASQ-training13b" / "training13b.json",
-        PROCESSED_ROOT / "BioASQ-training7b" / "test.json",
-    ],
-    "scifact_test": [
-        DATA_ROOT / "scifact" / "claims_test.csv",
-        PROCESSED_ROOT / "scifact" / "claims_test.csv",
-    ],
-    "scifact_train": [
-        DATA_ROOT / "scifact" / "claims_train.csv",
-        PROCESSED_ROOT / "scifact" / "claims_train.csv",
-    ],
-    "healthfc_test": [
-        DATA_ROOT / "HealthFC.csv",
-        DATA_ROOT / "healthfc_test.csv",
-        PROCESSED_ROOT / "healthfc_test.csv",
-    ],
-    "healthfc_train": [
-        DATA_ROOT / "HealthFC.csv",
-        DATA_ROOT / "healthfc_train.csv",
-        PROCESSED_ROOT / "healthfc_train.csv",
-    ],
+    "medqa":         f"{DATA_ROOT}/medqa-dataset/data_clean/questions/US/test.jsonl",
+    "medchangeqa":   f"{DATA_ROOT}/MedChange-main/Datasets/MedChangeQA.csv",
+    "bioasq":        f"{DATA_ROOT}/BioASQ-training7b/test.json",
+    "scifact_test":  f"{DATA_ROOT}/scifact/claims_test.csv",
+    "scifact_train": f"{DATA_ROOT}/scifact/claims_train.csv",
+    "healthfc_test":  f"{DATA_ROOT}/healthfc_test.csv",
+    "healthfc_train": f"{DATA_ROOT}/healthfc_train.csv",
 }
-
-
-def resolve_dataset_path(name: str) -> str:
-    for candidate in DATASET_PATHS[name]:
-        if candidate.exists():
-            return str(candidate)
-    return str(DATASET_PATHS[name][0])
 
 # ─── Prompts ─────────────────────────────────────────────────────────────────
 MEDQA_PROMPT = """You are a board-certified physician answering a USMLE-style question.
@@ -210,18 +169,6 @@ Respond with valid JSON only:
 {"step_by_step_thinking": "...", "answer_choice": "A or B or C"}
 Where A=TRUE, B=FALSE, C=MIXTURE."""
 
-LIVE_SEARCH_RUNTIME_WARNING = (
-    "Live web search results are retrieved at runtime and may change. "
-    "Clinical claims require human verification."
-)
-
-LIVE_WEB_PROMPT_SUFFIX = f"""Additional retrieval safety rules:
-- Documents labeled "Live Web Evidence" are runtime DDGS search snippets, not primary clinical truth.
-- Do not let live web snippets overrule stronger PubMed, KG, or textbook evidence.
-- If Live Web Evidence conflicts with PubMed or KG evidence, trust the PubMed/KG evidence.
-- If only weak Live Web Evidence is available and no stronger evidence supports a verdict, prefer the most conservative uncertainty label available.
-- {LIVE_SEARCH_RUNTIME_WARNING}"""
-
 # ─── Dataset Loaders ─────────────────────────────────────────────────────────
 
 def load_medqa(count: Optional[int]):
@@ -231,7 +178,7 @@ def load_medqa(count: Optional[int]):
                  "E": ...,  "answer_idx": "C", "meta_info": "step1"}
     Options are top-level string keys A-E; answer is in "answer_idx".
     """
-    path = resolve_dataset_path("medqa")
+    path = DATASET_PATHS["medqa"]
     questions = []
     with open(path, "r", encoding="utf-8") as f:
         for i, line in enumerate(f):
@@ -260,7 +207,7 @@ def load_medchangeqa(count: Optional[int]):
     LABEL_MAP = {"SUPPORTED": "A", "REFUTED": "B", "NOT ENOUGH INFORMATION": "C"}
     OPTIONS   = {"A": "SUPPORTED", "B": "REFUTED", "C": "NOT ENOUGH INFORMATION"}
 
-    df = pd.read_csv(resolve_dataset_path("medchangeqa"))
+    df = pd.read_csv(DATASET_PATHS["medchangeqa"])
     df = df.dropna(subset=["Question", "Newest Label"])
     df = df[df["Newest Label"].isin(LABEL_MAP)].reset_index(drop=True)
 
@@ -281,7 +228,7 @@ def load_medchangeqa(count: Optional[int]):
 
 def load_bioasq(count: Optional[int]):
     """Load BioASQ-7b yes/no questions."""
-    with open(resolve_dataset_path("bioasq"), "r", encoding="utf-8") as f:
+    with open(DATASET_PATHS["bioasq"], "r", encoding="utf-8") as f:
         data = json.load(f)
 
     questions = []
@@ -314,7 +261,7 @@ def load_scifact(split: str = "test", count: Optional[int] = None):
     LABEL_MAP = {"SUPPORT": "A", "CONTRADICT": "B", "": "C"}
     OPTIONS   = {"A": "SUPPORTED", "B": "CONTRADICTED", "C": "NOT ENOUGH INFORMATION"}
 
-    path = resolve_dataset_path(f"scifact_{split}")
+    path = DATASET_PATHS[f"scifact_{split}"]
     df = pd.read_csv(path)
 
     # SciFact may have duplicate claim IDs with multiple evidence rows → deduplicate
@@ -364,7 +311,7 @@ def load_healthfc(split: str = "test", count: Optional[int] = None):
             return "B"
         return "C"   # mixture, partially true, unproven, etc. (includes "1")
 
-    path = resolve_dataset_path(f"healthfc_{split}")
+    path = DATASET_PATHS[f"healthfc_{split}"]
     df = pd.read_csv(path)
     df = df.dropna(subset=["en_claim", "label"]).reset_index(drop=True)
 
@@ -383,170 +330,6 @@ def load_healthfc(split: str = "test", count: Optional[int] = None):
     return questions
 
 
-def subset_questions(questions: list, dataset_name: str,
-                     count: Optional[int] = None,
-                     percent: Optional[float] = None) -> list:
-    """Take a deterministic prefix subset by count and/or percent."""
-    total = len(questions)
-    limit = total
-
-    if percent is not None:
-        if percent <= 0 or percent > 100:
-            raise ValueError("--percent must be in the range (0, 100].")
-        limit = min(limit, math.ceil(total * (percent / 100.0))) if total else 0
-
-    if count is not None:
-        limit = min(limit, count)
-
-    subset = questions[:limit]
-    if limit != total:
-        log.info(
-            f"[{dataset_name}] Using {len(subset)}/{total} questions "
-            f"(count={count}, percent={percent})"
-        )
-    return subset
-
-
-def _doc_bucket(doc: dict) -> str:
-    title = str(doc.get("title", ""))
-    pmid = str(doc.get("PMID") or doc.get("pmid") or "")
-    source = str(doc.get("source", "")).lower()
-
-    if title == "Atomic Propositions":
-        return "atomic"
-    if title.startswith("KG:") or pmid.startswith("KG_") or pmid == "KG_propositions":
-        return "kg"
-    if source == "duckduckgo_live":
-        return "live_web"
-    if source in {"pubmed", "pmc"}:
-        return "pubmed"
-    return "bm25"
-
-
-def _doc_summary(doc: dict, rank: int) -> str:
-    if str(doc.get("source", "")).lower() == "duckduckgo_live":
-        title = str(doc.get("title", "Untitled")).strip().replace("\n", " ")
-        title = title[:90] + ("..." if len(title) > 90 else "")
-        url = str(doc.get("url", "")).strip()
-        url = url[:90] + ("..." if len(url) > 90 else "")
-        snippet = str(doc.get("snippet", "")).strip().replace("\n", " ")
-        snippet = snippet[:120] + ("..." if len(snippet) > 120 else "")
-        return (
-            f"    {rank}. Live Web Evidence | {title} | domain={doc.get('domain', '-')} "
-            f"| retrieved={doc.get('retrieved_at', '-')} | url={url} | snippet={snippet}"
-        )
-    title = str(doc.get("title", "Untitled")).strip().replace("\n", " ")
-    title = title[:110] + ("..." if len(title) > 110 else "")
-    pmid = doc.get("PMID") or doc.get("pmid") or "-"
-    source = doc.get("source", "corpus")
-    return f"    {rank}. {title} | source={source} | pmid={pmid}"
-
-
-def _has_live_web_docs(raw_docs: list[dict]) -> bool:
-    return any(_doc_bucket(doc) == "live_web" for doc in raw_docs)
-
-
-def _only_live_web_evidence(raw_docs: list[dict]) -> bool:
-    evidence_buckets = {_doc_bucket(doc) for doc in raw_docs if _doc_bucket(doc) != "atomic"}
-    return bool(evidence_buckets) and evidence_buckets == {"live_web"}
-
-
-def _label_vote_distribution(vote_distribution: dict, label_inv: Optional[dict]) -> dict:
-    if not label_inv:
-        return vote_distribution
-    return {label_inv.get(k, k): v for k, v in vote_distribution.items()}
-
-
-def print_pipeline_trace(question: str,
-                         entities: list,
-                         propositions: list,
-                         raw_docs: list,
-                         res: dict,
-                         pred: str,
-                         label_inv: Optional[dict],
-                         use_graph: bool,
-                         use_pubmed: bool,
-                         use_bm25: bool,
-                         use_live_search: bool,
-                         live_search_meta: Optional[dict] = None) -> None:
-    """Pretty-print an inspection trace for one full-pipeline question."""
-    def emit(line: str = "") -> None:
-        tqdm.write(line)
-
-    pred_label = label_inv.get(pred, pred) if label_inv else pred
-    votes = _label_vote_distribution(res.get("vote_distribution", {}), label_inv)
-    buckets = {"atomic": [], "kg": [], "pubmed": [], "bm25": [], "live_web": []}
-    for doc in raw_docs:
-        buckets.setdefault(_doc_bucket(doc), []).append(doc)
-
-    emit("\n" + "-" * 70)
-    emit("PIPELINE TRACE")
-    emit(f"Question: {question}")
-    emit("\nAtomic decomposition")
-    emit(f"  Entities     : {entities or '[]'}")
-    emit(f"  Propositions : {propositions or '[]'}")
-
-    if use_bm25:
-        emit("\nBM25/Textbook query")
-        emit(f"  {question}")
-        if buckets["bm25"]:
-            emit("  Retrieved:")
-            for idx, doc in enumerate(buckets["bm25"][:5], start=1):
-                emit(_doc_summary(doc, idx))
-        else:
-            emit("  Retrieved: none")
-
-    if use_graph:
-        emit("\nKG query")
-        emit(f"  {question}")
-        if buckets["kg"] or buckets["atomic"]:
-            emit("  Retrieved:")
-            rank = 1
-            for doc in buckets["atomic"][:1]:
-                emit(_doc_summary(doc, rank))
-                rank += 1
-            for doc in buckets["kg"][:5]:
-                emit(_doc_summary(doc, rank))
-                rank += 1
-        else:
-            emit("  Retrieved: none")
-
-    if use_pubmed:
-        emit("\nPubMed query")
-        emit(f"  {question}")
-        if buckets["pubmed"]:
-            emit("  Retrieved:")
-            for idx, doc in enumerate(buckets["pubmed"][:5], start=1):
-                emit(_doc_summary(doc, idx))
-        else:
-            emit("  Retrieved: none")
-
-    if use_live_search:
-        emit("\nLive web query")
-        if live_search_meta and live_search_meta.get("queries"):
-            emit(f"  Queries: {live_search_meta['queries']}")
-        if live_search_meta and live_search_meta.get("error"):
-            emit(f"  Status: failed ({live_search_meta['error']})")
-        elif buckets["live_web"]:
-            emit("  Retrieved:")
-            for idx, doc in enumerate(buckets["live_web"][:5], start=1):
-                emit(_doc_summary(doc, idx))
-        else:
-            emit("  Retrieved: none")
-
-    emit("\nVoting")
-    for thought in res.get("thoughts", []):
-        choice = thought.get("choice", "?")
-        choice_label = label_inv.get(choice, choice) if label_inv else choice
-        emit(
-            f"  Vote {thought.get('vote_idx', '?')}: "
-            f"{thought.get('model', '?')} -> {choice_label}"
-        )
-    emit(f"  Distribution: {votes}")
-    emit(f"\nFinal output: {pred_label}")
-    emit("-" * 70)
-
-
 # ─── Hierarchical Retriever (BM25 → MedCPT) ──────────────────────────────────
 
 class HierarchicalRetriever:
@@ -561,13 +344,10 @@ class HierarchicalRetriever:
         self.moe      = moe
         self.bm25     = bm25
         self.use_bm25 = use_bm25 and (bm25 is not None)
-        self.last_live_search_meta = {}
 
     def retrieve(self, query: str, k: int = 25, bm25_candidates: int = 100,
                  options=None, enable_pubmed: bool = True, pubmed_mode: str = "pubmed",
-                 recency_alpha: float = 0.0, enable_live_search: bool = False,
-                 live_search_k: int = 5, live_search_region: str = "in-en",
-                 live_search_queries: Optional[list[str]] = None):
+                 recency_alpha: float = 0.0):
         """
         If BM25 is active:
           1. BM25 retrieves `bm25_candidates` docs (optionally with recency boost).
@@ -585,12 +365,7 @@ class HierarchicalRetriever:
             moe_docs, moe_scores = self.moe.retrieve(
                 query, k1=k, options=options,
                 enable_pubmed=enable_pubmed, pubmed_mode=pubmed_mode,
-                enable_live_search=enable_live_search,
-                live_search_k=live_search_k,
-                live_search_region=live_search_region,
-                live_search_queries=live_search_queries,
             )
-            self.last_live_search_meta = getattr(self.moe, "last_live_search_meta", {})
             # Merge: BM25 candidates + MoE results via RRF
             merged_docs, merged_scores = self._rrf_merge(
                 [(bm25_docs, list(range(len(bm25_docs))), 0.4),
@@ -599,23 +374,17 @@ class HierarchicalRetriever:
             )
             return merged_docs, merged_scores
         else:
-            docs, scores = self.moe.retrieve(
+            return self.moe.retrieve(
                 query, k1=k, options=options,
                 enable_pubmed=enable_pubmed, pubmed_mode=pubmed_mode,
-                enable_live_search=enable_live_search,
-                live_search_k=live_search_k,
-                live_search_region=live_search_region,
-                live_search_queries=live_search_queries,
             )
-            self.last_live_search_meta = getattr(self.moe, "last_live_search_meta", {})
-            return docs, scores
 
     @staticmethod
     def _rrf_merge(pools, k: int = 25, rrf_k: int = 60):
         rrf_scores, registry = {}, {}
         for docs, scores, weight in pools:
             for rank, doc in enumerate(docs):
-                did = (doc.get("url") or doc.get("PMID") or doc.get("pmid") or
+                did = (doc.get("PMID") or doc.get("pmid") or
                        doc.get("id")   or doc.get("title", "")[:50])
                 rrf_scores[did] = rrf_scores.get(did, 0.0) + weight / (rrf_k + rank + 1)
                 if did not in registry:
@@ -659,27 +428,15 @@ def answer_with_calibration(llm_list, question, options, context, system_prompt,
 
 def _save_checkpoint(out_path, results, correct, total, config_snap, final=False):
     acc = correct / total if total else 0.0
-    cls = compute_classification_metrics(results)
     payload = {
         "config":   config_snap,
         "complete": final,
         "progress": f"{len(results)}/{total}",
         "accuracy": acc,
-        "classification_metrics": cls,
         "results":  results,
     }
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(payload, f, indent=2, ensure_ascii=False)
-
-
-def _summary_metrics_line(label: str, out_path: str) -> str:
-    with open(out_path, "r", encoding="utf-8") as f:
-        payload = json.load(f)
-    cls = payload.get("classification_metrics") or compute_classification_metrics(payload.get("results", []))
-    return (
-        f"  {label:<12}: Acc={cls['accuracy']:.1%} "
-        f"P={cls['precision']:.1%} R={cls['recall']:.1%} F1={cls['f1']:.1%}"
-    )
 
 
 def run_eval(
@@ -696,7 +453,6 @@ def run_eval(
     enable_pubmed: bool = True,
     pubmed_mode:   str  = "pubmed",
     label_inv:     dict = None,
-    uncertainty_choice: Optional[str] = None,
 ) -> float:
 
     print(f"\n{'='*70}")
@@ -727,14 +483,6 @@ def run_eval(
 
             t = time.time()
             try:
-                # Standalone atomic decomposition runs before retrieval so live
-                # search can query atomic medical propositions when available.
-                props_text = "None"
-                entities = []
-                propositions = []
-                if decomposer:
-                    entities, propositions = decomposer.decompose(q["question"], q.get("options"))
-
                 raw_docs, _ = retriever.retrieve(
                     q["question"],
                     k=config_snap["k"],
@@ -743,63 +491,40 @@ def run_eval(
                     enable_pubmed=enable_pubmed,
                     pubmed_mode=pubmed_mode,
                     recency_alpha=config_snap.get("recency_alpha", 0.0),
-                    enable_live_search=config_snap.get("enable_live_search", False),
-                    live_search_k=config_snap.get("live_search_k", 5),
-                    live_search_region=config_snap.get("live_search_region", "in-en"),
-                    live_search_queries=propositions or [q["question"]],
                 )
-
-                if propositions:
-                    props_text = "Key medical claims to verify:\n" + "\n".join(f"- {p}" for p in propositions)
-                    # Remove existing atomic propositions from graph retriever if present
-                    raw_docs = [d for d in raw_docs if d.get("title") != "Atomic Propositions"]
-                    # Prepend the standalone atomic propositions document
-                    raw_docs.insert(0, {
-                        "title": "Atomic Propositions",
-                        "content": props_text,
-                        "hop": 0,
-                        "PMID": "atomic_decomp"
-                    })
+                
+                # Standalone Atomic Decomposition
+                # Run this even if GraphRetriever (Knowledge Graph) is disabled.
+                props_text = "None"
+                if decomposer:
+                    entities, propositions = decomposer.decompose(q["question"], q.get("options"))
+                    if propositions:
+                        props_text = "Key medical claims to verify:\n" + "\n".join(f"- {p}" for p in propositions)
+                        # Remove existing atomic propositions from graph retriever if present
+                        raw_docs = [d for d in raw_docs if d.get("title") != "Atomic Propositions"]
+                        # Prepend the standalone atomic propositions document
+                        raw_docs.insert(0, {
+                            "title": "Atomic Propositions",
+                            "content": props_text,
+                            "hop": 0,
+                            "PMID": "atomic_decomp"
+                        })
 
                 ctx = compressor.compress(
                     q["question"], raw_docs,
                     context_length=config_snap["context_len"]
                 )
                 props = props_text
-                effective_prompt = sys_prompt
-                if _has_live_web_docs(raw_docs):
-                    effective_prompt = f"{sys_prompt}\n\n{LIVE_WEB_PROMPT_SUFFIX}"
                 res  = answer_with_calibration(
-                    llm_list, q["question"], q["options"], ctx, effective_prompt,
+                    llm_list, q["question"], q["options"], ctx, sys_prompt,
                     votes=config_snap["votes"],
                     is_ensemble=config_snap["ensemble_mode"],
                     has_maybe=has_maybe,
                 )
                 pred = res.get("final_answer", "?")
-                if uncertainty_choice and _only_live_web_evidence(raw_docs):
-                    pred = uncertainty_choice
-                    res.setdefault("posthoc_notes", []).append(
-                        "Only live web evidence was retrieved; defaulted to the uncertainty label."
-                    )
-                live_search_meta = dict(getattr(retriever, "last_live_search_meta", {}) or {})
-                if config_snap.get("trace_pipeline"):
-                    print_pipeline_trace(
-                        question=q["question"],
-                        entities=entities,
-                        propositions=propositions,
-                        raw_docs=raw_docs,
-                        res=res,
-                        pred=pred,
-                        label_inv=label_inv,
-                        use_graph=config_snap.get("use_graph", False),
-                        use_pubmed=enable_pubmed,
-                        use_bm25=config_snap.get("use_bm25", False),
-                        use_live_search=config_snap.get("enable_live_search", False),
-                        live_search_meta=live_search_meta,
-                    )
             except Exception as e:
                 log.error(f"ERROR on Q{qi}: {e}")
-                pred, res, ctx, props, live_search_meta = "?", {}, "Error", "Error", {}
+                pred, res, ctx, props = "?", {}, "Error", "Error"
 
             ok      = pred == q["answer"]
             elapsed = time.time() - t
@@ -826,11 +551,6 @@ def run_eval(
                 "retrieved_context":   ctx,
                 "vote_distribution":   res.get("vote_distribution", {}),
                 "reasoning_traces":    res.get("thoughts", []),
-                "posthoc_notes":       res.get("posthoc_notes", []),
-                "retrieval_metadata": {
-                    "live_search": live_search_meta,
-                    "warnings": [LIVE_SEARCH_RUNTIME_WARNING] if config_snap.get("enable_live_search") else [],
-                },
             }
             results.append(rec)
             done[q["id"]] = rec
@@ -842,15 +562,7 @@ def run_eval(
 
     acc = correct / len(questions) if questions else 0.0
     _save_checkpoint(out_path, results, correct, len(questions), config_snap, final=True)
-    cls = compute_classification_metrics(results)
-    print(
-        f"\n  {name} Final Metrics: "
-        f"Acc={acc*100:.1f}% "
-        f"P={cls['precision']*100:.1f}% "
-        f"R={cls['recall']*100:.1f}% "
-        f"F1={cls['f1']*100:.1f}%"
-    )
-    print(f"  Correct: {correct}/{len(questions)}")
+    print(f"\n  {name} Final Accuracy: {correct}/{len(questions)} ({acc*100:.1f}%)")
     return acc
 
 
@@ -869,8 +581,6 @@ if __name__ == "__main__":
                         help="Ollama model tag for atomic proposition decomposition")
     parser.add_argument("--count",   type=int, default=None,
                         help="Max questions per dataset")
-    parser.add_argument("--percent", type=float, default=None,
-                        help="Evaluate only the first N percent of each dataset (0 < N <= 100)")
     parser.add_argument("--k",       type=int, default=None,
                         help="Final retrieval top-k")
     parser.add_argument("--votes",   type=int, default=None,
@@ -887,12 +597,6 @@ if __name__ == "__main__":
                         help="Enable GraphRAG KG retriever")
     parser.add_argument("--no-kg", action="store_true",
                         help="Disable GraphRAG KG retriever (explicit; overrides --use-graph)")
-    parser.add_argument("--enable-live-search", action="store_true",
-                        help="Enable DDGS live web search as an additional evidence source")
-    parser.add_argument("--live-search-k", type=int, default=None,
-                        help="Top-k live DDGS web results to fuse into retrieval")
-    parser.add_argument("--live-search-region", type=str, default=None,
-                        help="DDGS region code for live search (e.g. in-en, us-en)")
     parser.add_argument("--no-resume", action="store_true",
                         help="Start fresh (ignore checkpoint)")
     parser.add_argument("--no-decomp", action="store_true",
@@ -912,16 +616,12 @@ if __name__ == "__main__":
                         help="Unique experiment identifier saved in result JSON for cross-run analysis")
     parser.add_argument("--results-dir", type=str, default=None,
                         help="Override default results directory")
-    parser.add_argument("--trace-pipeline", action="store_true",
-                        help="Print per-question pipeline trace: query, atomic decomp, source retrievals, voting, final output")
     args = parser.parse_args()
 
     # ── Apply CLI overrides ────────────────────────────────────────────────
     if args.model:         CONFIG["model"]         = args.model
     if args.decomp_model:  CONFIG["decomp_model"]  = args.decomp_model
     if args.count:         CONFIG["count"]         = args.count
-    if args.percent is not None:
-        CONFIG["percent"] = args.percent
     if args.k:             CONFIG["k"]             = args.k
     if args.votes:         CONFIG["votes"]         = args.votes
     if args.tag:           CONFIG["tag"]           = args.tag
@@ -930,18 +630,10 @@ if __name__ == "__main__":
     if args.use_pubmed:    CONFIG["use_pubmed"]    = True   # --use-pubmed wins over default False
     if args.use_graph:     CONFIG["use_graph"]     = True
     if args.no_kg:         CONFIG["use_graph"]     = False   # --no-kg wins
-    if args.enable_live_search:
-        CONFIG["enable_live_search"] = True
-    if args.live_search_k is not None:
-        CONFIG["live_search_k"] = args.live_search_k
-    if args.live_search_region:
-        CONFIG["live_search_region"] = args.live_search_region
     if args.no_resume:     CONFIG["resume"]        = False
     if args.recency_bm25:  CONFIG["recency_alpha"] = args.recency_alpha
     if args.experiment_id: CONFIG["experiment_id"] = args.experiment_id
     if args.results_dir:   CONFIG["results_dir"]   = args.results_dir
-    if args.trace_pipeline:
-        CONFIG["trace_pipeline"] = True
 
     # ── Build model list: --models overrides --model ───────────────────────
     if args.models:
@@ -954,7 +646,7 @@ if __name__ == "__main__":
         CONFIG["models"] = [CONFIG["model"]]
 
     os.makedirs(CONFIG["results_dir"], exist_ok=True)
-    cfg = load_yaml_config(project_path("config", "default.yaml"))
+    cfg = yaml.safe_load(open(f"{PROJECT_ROOT}/config/default.yaml"))
     cfg["compression"]["enabled"] = True
 
     print("\n" + "="*70)
@@ -963,11 +655,6 @@ if __name__ == "__main__":
     print(f"  Models      : {CONFIG['models']}")
     print(f"  k={CONFIG['k']}  bm25_candidates={CONFIG['bm25_candidates']}  votes={CONFIG['votes']}")
     print(f"  BM25={CONFIG['use_bm25']}  PubMed/MedCPT={CONFIG['use_pubmed']}  Graph={CONFIG['use_graph']}")
-    print(
-        f"  LiveSearch={CONFIG['enable_live_search']}  "
-        f"LiveK={CONFIG['live_search_k']}  LiveRegion={CONFIG['live_search_region']}"
-    )
-    print(f"  Count={CONFIG['count']}  Percent={CONFIG['percent']}  Trace={CONFIG['trace_pipeline']}")
     print(f"  RecencyAlpha={CONFIG['recency_alpha']}  ExpID={CONFIG['experiment_id'] or '(none)'}")
     print("="*70)
 
@@ -1001,15 +688,7 @@ if __name__ == "__main__":
             log.warning(f"kg_graph.pkl not found at '{kg_path}'. Skipping GraphRAG.")
 
     # ── MoE Retriever ─────────────────────────────────────────────────────
-    live_web = None
-    if CONFIG["enable_live_search"]:
-        log.info("Loading DDGS live web retriever...")
-        live_web = LiveWebSearchRetriever(
-            timeout=cfg.get("live_search", {}).get("timeout", 8)
-        )
-
     moe = MoERetriever(graph, None, None, cfg,
-                       live_web_retriever=live_web,
                        ollama_client=ll_models[0].client)
 
     # ── MedCPT / PubMed FAISS (Stage-2 semantic) ──────────────────────────
@@ -1017,7 +696,7 @@ if __name__ == "__main__":
         log.info("Loading PubMed MedCPT dense retriever (Stage-2)...")
         # Override stale cache path from default.yaml
         cfg.setdefault("pubmed", {})
-        cfg["pubmed"]["cache_dir"] = project_path("data", "pubmed_cache")
+        cfg["pubmed"]["cache_dir"] = f"{PROJECT_ROOT}/data/pubmed_cache"
         os.makedirs(cfg["pubmed"]["cache_dir"], exist_ok=True)
         moe.pubmed = PubMedDenseRetriever(cfg)
 
@@ -1025,7 +704,7 @@ if __name__ == "__main__":
     bm25 = None
     if CONFIG["use_bm25"]:
         # Always use PROJECT_ROOT — ignore stale path in default.yaml
-        corpus_dir = project_path("data", "corpus")
+        corpus_dir = f"{PROJECT_ROOT}/data/corpus"
         try:
             log.info(f"Loading BM25 retriever (Stage-1) from {corpus_dir} ...")
             bm25 = BM25Retriever(corpus_dir, corpus_name="textbooks", cache=True)
@@ -1054,66 +733,61 @@ if __name__ == "__main__":
 
     # ── MedQA ─────────────────────────────────────────────────────────────
     if run in ("all", "medqa"):
-        qs  = subset_questions(load_medqa(None), "MedQA-US", CONFIG["count"], CONFIG["percent"])
+        qs  = load_medqa(CONFIG["count"])
         acc = run_eval(
             "MedQA-US", qs, ll_models, retriever, compressor, decomposer,
             MEDQA_PROMPT, _path("medqa"), CONFIG,
             has_maybe=False, enable_pubmed=CONFIG["use_pubmed"],
-            uncertainty_choice=None,
         )
-        summary_lines.append(_summary_metrics_line("MedQA-US", _path("medqa")))
+        summary_lines.append(f"  MedQA-US    : {acc:.1%}")
 
     # ── MedChangeQA ───────────────────────────────────────────────────────
     if run in ("all", "medchangeqa"):
         MEDCHG_INV = {"A": "SUPPORTED", "B": "REFUTED", "C": "NOT ENOUGH INFORMATION"}
-        qs  = subset_questions(load_medchangeqa(None), "MedChangeQA", CONFIG["count"], CONFIG["percent"])
+        qs  = load_medchangeqa(CONFIG["count"])
         acc = run_eval(
             "MedChangeQA", qs, ll_models, retriever, compressor, decomposer,
             MEDCHANGEQA_PROMPT, _path("medchangeqa"), CONFIG,
             has_maybe=True, enable_pubmed=CONFIG["use_pubmed"],
             label_inv=MEDCHG_INV,
-            uncertainty_choice="C",
         )
-        summary_lines.append(_summary_metrics_line("MedChangeQA", _path("medchangeqa")))
+        summary_lines.append(f"  MedChangeQA : {acc:.1%}")
 
     # ── BioASQ ────────────────────────────────────────────────────────────
     if run in ("all", "bioasq"):
         BIOASQ_INV = {"A": "Yes", "B": "No"}
-        qs  = subset_questions(load_bioasq(None), "BioASQ-7b", CONFIG["count"], CONFIG["percent"])
+        qs  = load_bioasq(CONFIG["count"])
         acc = run_eval(
             "BioASQ-7b (Y/N)", qs, ll_models, retriever, compressor, decomposer,
             BIOASQ_PROMPT, _path("bioasq"), CONFIG,
             has_maybe=False, enable_pubmed=CONFIG["use_pubmed"],
             label_inv=BIOASQ_INV,
-            uncertainty_choice=None,
         )
-        summary_lines.append(_summary_metrics_line("BioASQ", _path("bioasq")))
+        summary_lines.append(f"  BioASQ      : {acc:.1%}")
 
     # ── SciFact (test split) ──────────────────────────────────────────────
     if run in ("all", "scifact"):
         SCIFACT_INV = {"A": "SUPPORT", "B": "CONTRADICT", "C": "NEI"}
-        qs  = subset_questions(load_scifact(split="test", count=None), "SciFact-Test", CONFIG["count"], CONFIG["percent"])
+        qs  = load_scifact(split="test", count=CONFIG["count"])
         acc = run_eval(
             "SciFact-Test", qs, ll_models, retriever, compressor, decomposer,
             SCIFACT_PROMPT, _path("scifact_test"), CONFIG,
             has_maybe=True, enable_pubmed=CONFIG["use_pubmed"],
             label_inv=SCIFACT_INV,
-            uncertainty_choice="C",
         )
-        summary_lines.append(_summary_metrics_line("SciFact", _path("scifact_test")))
+        summary_lines.append(f"  SciFact     : {acc:.1%}")
 
     # ── HealthFC (test split) ─────────────────────────────────────────────
     if run in ("all", "healthfc"):
         HEALTHFC_INV = {"A": "True", "B": "False", "C": "Mixture"}
-        qs  = subset_questions(load_healthfc(split="test", count=None), "HealthFC-Test", CONFIG["count"], CONFIG["percent"])
+        qs  = load_healthfc(split="test", count=CONFIG["count"])
         acc = run_eval(
             "HealthFC-Test", qs, ll_models, retriever, compressor, decomposer,
             HEALTHFC_PROMPT, _path("healthfc_test"), CONFIG,
             has_maybe=True, enable_pubmed=CONFIG["use_pubmed"],
             label_inv=HEALTHFC_INV,
-            uncertainty_choice=None,
         )
-        summary_lines.append(_summary_metrics_line("HealthFC", _path("healthfc_test")))
+        summary_lines.append(f"  HealthFC    : {acc:.1%}")
 
     print("\n".join(summary_lines))
     print()

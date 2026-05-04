@@ -27,11 +27,10 @@ import time
 import concurrent.futures
 from dataclasses import dataclass, field
 from typing import List, Optional
-from pathlib import Path
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
-PROJECT_ROOT = str(Path(__file__).resolve().parents[1])
-EVAL_SCRIPT = os.path.join(PROJECT_ROOT, "eval_all.py")
+PROJECT_ROOT = "/mnt/d/Harsha/AoLM/ClinProof"
+EVAL_SCRIPT = f"{PROJECT_ROOT}/eval_all.py"
 RESULTS_SUBDIR = "v5_ablations"
 
 # ── Experiment Definition ─────────────────────────────────────────────────────
@@ -447,9 +446,13 @@ def build_cmd(exp: Experiment, dataset: str, results_dir: str) -> str:
 def run_experiment(exp: Experiment, dataset: str, results_dir: str,
                    dry_run: bool = False) -> None:
     cmd = build_cmd(exp, dataset, results_dir)
-    full_cmd = cmd
-    env = os.environ.copy()
-    env["CLINPROOF_RESULTS"] = results_dir
+    # Override results_dir by editing CONFIG in the script via env var (simpler:
+    # we redirect results to the v5_ablations directory using a symlink-compatible path)
+    full_cmd = (
+        f"cd {PROJECT_ROOT} && "
+        f"CLINPROOF_RESULTS={results_dir} "
+        + cmd
+    )
 
     print(f"\n{'-'*70}")
     print(f"  [{exp.experiment_id}] {exp.description}")
@@ -458,16 +461,9 @@ def run_experiment(exp: Experiment, dataset: str, results_dir: str,
     print(f"{'-'*70}")
 
     if not dry_run:
-        if os.name == "nt":
-            run_cmd = ["wsl", "-e", "bash", "-lc", full_cmd]
-        else:
-            run_cmd = ["bash", "-lc", full_cmd]
-
         ret = subprocess.run(
-            run_cmd,
-            text=True,
-            cwd=PROJECT_ROOT,
-            env=env,
+            ["wsl", "-e", "bash", "-ic", full_cmd],
+            text=True
         )
         if ret.returncode != 0:
             print(f"  [ERROR] Experiment {exp.experiment_id} on {dataset} failed "
