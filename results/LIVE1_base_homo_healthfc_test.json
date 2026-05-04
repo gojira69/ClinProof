@@ -26,9 +26,9 @@
       "qwen2.5:14b"
     ]
   },
-  "complete": false,
-  "progress": "51/75",
-  "accuracy": 0.3333333333333333,
+  "complete": true,
+  "progress": "75/75",
+  "accuracy": 0.5066666666666667,
   "results": [
     {
       "id": "hfc_test_0",
@@ -1200,6 +1200,558 @@
           "vote_idx": 1,
           "step_by_step_thinking": "1. The core health claim is that curcumin protects healthy people from mental impairment or even from developing dementia.\n2. Evidence suggests that curcumin has anti-inflammatory and antioxidant properties, which may benefit brain health. However, the majority of studies on curcumin's effects on cognitive function have been conducted in animals or in humans with pre-existing conditions such as mild cognitive impairment or Alzheimer’s disease rather than healthy individuals. There is limited high-quality evidence showing that curcumin prevents mental decline or dementia in healthy people.\n3. Given the lack of strong evidence for its preventive benefits in healthy individuals, while acknowledging potential beneficial effects observed in specific populations (such as those with pre-existing conditions), this claim requires nuance and context.",
           "choice": "C"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_51",
+      "question": "Does the pregnancy hormone hCG help with weight loss?",
+      "gt_answer": "B",
+      "gt_label": "2",
+      "pred_answer": "B",
+      "pred_label": "False",
+      "correct": true,
+      "time_seconds": 2.3369929790496826,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "B": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "The core health claim is that the pregnancy hormone hCG aids in weight loss. Evidence from medical research indicates that there is no substantial evidence supporting the use of hCG for weight loss outside of pregnancy, and it can be harmful. The FDA has also issued warnings against the use of hCG for non-pregnancy related weight loss due to lack of efficacy and potential risks.",
+          "choice": "B"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_52",
+      "question": "Does chocolate have a mood-lifting effect?",
+      "gt_answer": "A",
+      "gt_label": "0",
+      "pred_answer": "C",
+      "pred_label": "Mixture",
+      "correct": false,
+      "time_seconds": 3.8575782775878906,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "C": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "1. The core health claim is that chocolate has a mood-lifting effect.\n2. Evidence suggests that chocolate, particularly dark chocolate, contains compounds like phenylethylamine and theobromine which can influence neurotransmitters in the brain such as serotonin and dopamine, potentially affecting mood positively. Additionally, consuming chocolate triggers the release of endorphins and provides an immediate sense of pleasure due to its taste and texture.\n3. However, while there is evidence that chocolate consumption may have a short-term positive effect on mood, this does not mean it has significant long-term benefits or that everyone will experience the same effects. Therefore, the claim can be considered true in part but requires context for full understanding.",
+          "choice": "C"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_53",
+      "question": "Do boron preparations such as borax, boric acid, or calcium fructoborate relieve pain associated with age-related joint wear (osteoarthritis)?",
+      "gt_answer": "C",
+      "gt_label": "1",
+      "pred_answer": "B",
+      "pred_label": "False",
+      "correct": false,
+      "time_seconds": 3.2872979640960693,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "B": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "1. The core health claim is that boron preparations such as borax, boric acid, or calcium fructoborate can relieve pain associated with age-related joint wear (osteoarthritis). 2. Evidence suggests that while some studies indicate potential benefits of boron in osteoarthritis management, the data are limited and inconclusive compared to established treatments for arthritis. There is no strong evidence supporting significant relief from these specific boron preparations. 3. Given the lack of robust clinical trials demonstrating efficacy, this claim cannot be fully supported by medical evidence.",
+          "choice": "B"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_54",
+      "question": "Do blueberries improve blood sugar levels in type 2 diabetes or do they prevent secondary diseases?",
+      "gt_answer": "C",
+      "gt_label": "1",
+      "pred_answer": "C",
+      "pred_label": "Mixture",
+      "correct": true,
+      "time_seconds": 2.931400775909424,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "C": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "The core claim is that blueberries improve blood sugar levels in type 2 diabetes and prevent secondary diseases. While research suggests that blueberries may have a positive impact on glycemic control due to their high polyphenol content, which can help reduce insulin resistance and inflammation, the evidence for preventing specific secondary diseases (like cardiovascular disease) is more nuanced and context-dependent. Therefore, while there are benefits of blueberries in managing type 2 diabetes, the claim about prevention of secondary diseases needs further qualification.",
+          "choice": "C"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_55",
+      "question": "Does taking probiotics facilitate weight loss to any significant degree?",
+      "gt_answer": "B",
+      "gt_label": "2",
+      "pred_answer": "B",
+      "pred_label": "False",
+      "correct": true,
+      "time_seconds": 3.42358136177063,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "B": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "1. The core health claim is that taking probiotics facilitates weight loss to a significant degree.\n2. Evidence from systematic reviews and meta-analyses suggests that while some studies show modest effects of certain probiotic strains on body weight or composition, these effects are generally small and not consistent across all populations or probiotic types. The majority of high-quality evidence does not support the notion that probiotics facilitate significant weight loss.\n3. There is nuance here because specific strains might have minor impacts in some individuals under certain conditions, but overall, the claim that probiotics significantly aid in weight loss is not supported by robust scientific evidence.",
+          "choice": "B"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_56",
+      "question": "Can regular exercise prevent you from getting a cold or other respiratory infections???",
+      "gt_answer": "B",
+      "gt_label": "2",
+      "pred_answer": "C",
+      "pred_label": "Mixture",
+      "correct": false,
+      "time_seconds": 4.003134489059448,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "C": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "1. The core health claim is that regular exercise can prevent you from getting a cold or other respiratory infections.\n2. Evidence supports the idea that regular moderate exercise can boost immune function and reduce the incidence of upper respiratory tract infections (URTIs) such as the common cold, but it does not guarantee complete prevention. Studies have shown that people who engage in regular physical activity tend to have fewer sick days due to URTI than those who are inactive.\n3. However, there is nuance involved because while exercise can enhance immune function and reduce susceptibility to infections, it cannot completely prevent colds or other respiratory infections; individuals may still get ill but potentially less frequently and with milder symptoms compared to those who do not exercise regularly.",
+          "choice": "C"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_57",
+      "question": "Does the full moon have a negative effect on sleep duration?",
+      "gt_answer": "B",
+      "gt_label": "2",
+      "pred_answer": "C",
+      "pred_label": "Mixture",
+      "correct": false,
+      "time_seconds": 3.158651351928711,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "C": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "1. The core health claim is that the full moon negatively affects sleep duration.\n2. Evidence from scientific studies, such as a study published in Current Biology (2013), suggests there may be a correlation between lunar phases and human sleep patterns, with people sleeping less around the time of the full moon. However, this effect is small and not consistently observed across all populations or studies.\n3. Given that some evidence exists but it is limited and context-dependent, the claim cannot be universally true or false without considering these nuances.",
+          "choice": "C"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_58",
+      "question": "Does the drug Sovaldi (sofosbuvir) enable high cure rates for chronic hepatitis C?",
+      "gt_answer": "A",
+      "gt_label": "0",
+      "pred_answer": "A",
+      "pred_label": "True",
+      "correct": true,
+      "time_seconds": 3.145702838897705,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "A": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "{\"step_by Step_Thinking\": \"The core health claim is whether Sovaldi (sofosbuvir) enables high cure rates for chronic hepatitis C. Evidence strongly supports that sofosbuvir, when used in combination with other antiviral agents like ledipasvir or ribavirin, achieves very high sustained virologic response (SVR) rates, which is the primary measure of a cure in hepatitis C treatment. Clinical trials and real-world data consistently show SVR rates above 90% for many genotypes of HCV when using sofosbuvir-based regimens.\", \"answer_choice\": \"A\"}",
+          "choice": "A"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_59",
+      "question": "Does starting school later improve health, learning success, and quality of life in adolescents?",
+      "gt_answer": "C",
+      "gt_label": "1",
+      "pred_answer": "A",
+      "pred_label": "True",
+      "correct": false,
+      "time_seconds": 3.12876296043396,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "A": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "1. The core health claim is that starting school later can improve health, learning success, and quality of life in adolescents.\n2. There is substantial evidence from various studies indicating that later start times for schools correlate with better sleep duration, mental health outcomes, academic performance, and overall well-being among teenagers due to their biological need for more sleep at this age.\n3. While there are some logistical challenges and mixed opinions from educators and parents regarding the implementation of later school start times, the scientific consensus supports the benefits highlighted in the claim.",
+          "choice": "A"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_60",
+      "question": "Are extracts of Artemisa annua (annual mugwort) or the active ingredient artemisinin obtained from it effective against coronavirus?",
+      "gt_answer": "C",
+      "gt_label": "1",
+      "pred_answer": "B",
+      "pred_label": "False",
+      "correct": false,
+      "time_seconds": 3.2910587787628174,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "B": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "1. The core health claim is that extracts of Artemisia annua or the active ingredient artemisinin are effective against coronavirus.\n2. Evidence from clinical trials and systematic reviews indicates limited effectiveness of artemisinin derivatives against SARS-CoV-2. While some in vitro studies have shown antiviral activity, there is insufficient evidence to support its use as a treatment for COVID-19 in humans.\n3. There are no large-scale randomized controlled trials demonstrating the efficacy and safety of Artemisia annua or artemisinin against SARS-CoV-2 infection in clinical settings.",
+          "choice": "B"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_61",
+      "question": "Can filtering out blue light using blue filter glasses or night mode settings on smartphone, tablet or laptop screens have a beneficial effect on sleep?",
+      "gt_answer": "B",
+      "gt_label": "2",
+      "pred_answer": "A",
+      "pred_label": "True",
+      "correct": false,
+      "time_seconds": 3.232201099395752,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "A": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "1. The core health claim is that filtering out blue light using blue filter glasses or night mode settings on electronic devices can have a beneficial effect on sleep.\n2. Evidence supports this claim: exposure to blue light from screens can suppress the production of melatonin, a hormone that regulates sleep-wake cycles. Filtering out blue light reduces this suppression and may improve sleep quality by allowing for more natural melatonin release at night.\n3. There is no significant nuance or contradiction in the evidence supporting the use of blue light filters to improve sleep; thus, it does not require a MIXTURE verdict.",
+          "choice": "A"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_62",
+      "question": "Do phthalates reduce the likelihood of pregnancy in women?",
+      "gt_answer": "C",
+      "gt_label": "1",
+      "pred_answer": "C",
+      "pred_label": "Mixture",
+      "correct": true,
+      "time_seconds": 3.341928005218506,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "C": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "1. The core health claim is that phthalates reduce the likelihood of pregnancy in women.\n2. Evidence supports a link between exposure to phthalates and adverse reproductive outcomes, including reduced fertility and increased risk of miscarriage. Studies have shown that higher levels of certain phthalate metabolites are associated with lower ovarian reserve and poorer egg quality, which can affect conception rates.\n3. There is no significant nuance or context-dependency in the claim regarding the negative impact of phthalates on pregnancy likelihood; thus, it does not require a MIXTURE verdict.",
+          "choice": "C"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_63",
+      "question": "Is Exemestane better than other hormone-altering drugs for reducing the risk of breast cancer or treating it?",
+      "gt_answer": "A",
+      "gt_label": "0",
+      "pred_answer": "C",
+      "pred_label": "Mixture",
+      "correct": false,
+      "time_seconds": 4.822944402694702,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "C": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "1. The core health claim is that Exemestane is better than other hormone-altering drugs for reducing the risk of breast cancer or treating it.\n2. Evidence supporting this claim includes clinical trials such as the International Breast Cancer Intervention Study (IBIS-II) which showed exemestane to be effective in reducing breast cancer incidence in high-risk women compared to placebo. However, comparing it directly with other hormone-altering drugs like tamoxifen or aromatase inhibitors requires specific head-to-head comparisons.\n3. There is no clear evidence that exemestane is universally better than all other hormone-altering drugs for every aspect of reducing breast cancer risk or treatment efficacy; the effectiveness can depend on individual patient characteristics and the stage of breast cancer. Therefore, it's not accurate to state that exemestane is definitively 'better' without specifying context.\n4. Given these nuances, the claim cannot be fully supported as TRUE across all contexts.",
+          "choice": "C"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_64",
+      "question": "Does microimmunotherapy improve symptoms of allergies, cancer, joint inflammation, autoimmune diseases, dementia or various viral infections?",
+      "gt_answer": "C",
+      "gt_label": "1",
+      "pred_answer": "B",
+      "pred_label": "False",
+      "correct": false,
+      "time_seconds": 3.164045810699463,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "B": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "The core health claim is that microimmunotherapy improves symptoms for a variety of conditions including allergies, cancer, joint inflammation, autoimmune diseases, dementia and viral infections. Microimmunotherapy involves the use of low doses of allergens or antigens to stimulate the immune system without causing an allergic reaction. However, there is limited scientific evidence supporting its efficacy across such diverse health issues as stated in the claim. For example, while some studies suggest benefits for allergies, robust clinical trials are lacking for conditions like cancer and dementia. Therefore, this broad claim cannot be universally supported by medical evidence.",
+          "choice": "B"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_65",
+      "question": "Is special baby water better for infants than tap water?",
+      "gt_answer": "C",
+      "gt_label": "1",
+      "pred_answer": "C",
+      "pred_label": "Mixture",
+      "correct": true,
+      "time_seconds": 4.564722299575806,
+      "atomic_propositions": "None",
+      "retrieved_context": "Document [1] (Title: Baby Water: The Good, The Bad, and The Misunderstood)\nURL: https://distillata.com/blog/baby-water-the-good-the-bad-and-the-misunderstood/ Domain: distillata.com Retrieved at: 2026-05-04T05:16:15.426473+00:00 Snippet: Beyond just \"clean,\" what makes \"baby water\" specifically for infants? Explore the nuanced comparison of distilled vs. baby water and its implications. When it comes to your baby, only the best will do. You take time to research formulas, cereal, and more. With so many options, this can be confusing. Runtime note: This live web snippet is weak secondary evidence and requires human verification.\n\nDocument [2] (Title: Is Baby Water the Same as Distilled Water: What Parents Need to Know ...)\nURL: https://naturalparentingcenter.com/is-baby-water-the-same-as-distilled-water/ Domain: naturalparentingcenter.com Retrieved at: 2026-05-04T05:16:15.426473+00:00 Snippet: Is baby water the same as distilled water? This article answers this common question by exploring the differences between baby water and distilled water. Parents will learn about the unique purification processes for baby water, designed specifically for infants, and the uses of distilled water. Runtime note: This live web snippet is weak secondary evidence and requires human verification.\n\nDocument [3] (Title: Is Distilled Water the Same as Baby Water? What Parents Need to Know)\nURL: https://www.waterbee.eu/types/is-distilled-water-the-same-as-baby-water-what-parents-need-to-know/ Domain: waterbee.eu Retrieved at: 2026-05-04T05:16:15.426473+00:00 Snippet: When it comes to your baby's hydration, understanding water types can be confusing. Distilled water and baby water differ in processing and minerals, but both are safe for infants. Learn the essentials to make informed choices for your little one's health. Runtime note: This live web snippet is weak secondary evidence and requires human verification.\n\nDocument [4] (Title: Distilled vs Purified Water for Baby Formula)\nURL: https://organiclifestart.com/blogs/guides/distilled-or-purified-water-for-baby-formula-which-one-is-better-for-your-baby Domain: organiclifestart.com Retrieved at: 2026-05-04T05:16:15.426473+00:00 Snippet: Distilled water vs purified water for baby formula explained. Learn the difference, safety tips, and which water is best for babies. Runtime note: This live web snippet is weak secondary evidence and requires human verification.\n\nDocument [5] (Title: Best Distilled Water for Baby Formula - 2026 Reviews)\nURL: https://stuckathomemom.com/reviews/best-distilled-water-for-baby-formula/ Domain: stuckathomemom.com Retrieved at: 2026-05-04T05:16:15.426473+00:00 Snippet: ABC Baby Water offers premium distilled water specifically designed for infants. With an 11-hour, 9-step purification process, it ensures no impurities or contaminants. Perfect for mixing formula, cereal, or daily drinking, and comes in convenient 16.9oz BPA-free bottles. Runtime note: This live web snippet is weak secondary evidence and requires human verification.",
+      "vote_distribution": {
+        "C": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "The core health claim is whether special baby water is better for infants than tap water. The provided documents discuss the differences between distilled and baby water, but they do not provide strong evidence that one type of water is definitively 'better' for infants in terms of health benefits or safety compared to properly treated tap water. Tap water can be safe for infants if it meets certain quality standards (e.g., free from contaminants like lead). Special baby water may offer peace of mind due to its purification process, but there's no conclusive evidence that it is inherently better than clean tap water.",
+          "choice": "C"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_66",
+      "question": "Can injections with the enzyme collagenase straighten fingers bent by Dupuytren's disease without surgery? (Reader inquiry)",
+      "gt_answer": "A",
+      "gt_label": "0",
+      "pred_answer": "A",
+      "pred_label": "True",
+      "correct": true,
+      "time_seconds": 3.362786054611206,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "A": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "1. The core health claim is that injections of collagenase can straighten fingers bent due to Dupuytren's disease without surgery.\n2. Evidence supports this claim: Collagenase clostridium histolyticum (CCH) injection has been approved by the FDA for treating contractures in patients with Dupuytren's disease. Clinical trials have shown that CCH injections can effectively break down collagen and reduce finger contracture, often avoiding the need for surgery.\n3. There is no significant nuance or context-dependency that would require a MIXTURE verdict; the evidence clearly supports the claim.",
+          "choice": "A"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_67",
+      "question": "Does a ketogenic diet help against cancer?",
+      "gt_answer": "C",
+      "gt_label": "1",
+      "pred_answer": "C",
+      "pred_label": "Mixture",
+      "correct": true,
+      "time_seconds": 3.3401598930358887,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "C": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "The core health claim is whether a ketogenic diet helps against cancer. The evidence for the efficacy of a ketogenic diet in treating or preventing cancer is mixed and largely inconclusive outside of specific contexts such as certain types of brain tumors. Some studies suggest that a ketogenic diet may have anti-tumor effects, particularly in glioblastoma, but these benefits are not universally applicable to all cancers. Therefore, while there might be some true elements regarding the potential benefits of a ketogenic diet for cancer treatment or prevention, especially under specific conditions, it cannot be broadly stated as true without significant nuance.",
+          "choice": "C"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_68",
+      "question": "Do wound care products with sodium hypochlorite such as ActiMaris promote the healing process of wounds?",
+      "gt_answer": "C",
+      "gt_label": "1",
+      "pred_answer": "C",
+      "pred_label": "Mixture",
+      "correct": true,
+      "time_seconds": 5.103553533554077,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "C": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "1. The core health claim is that wound care products containing sodium hypochlorite, such as ActiMaris, promote the healing process of wounds.\n2. Evidence suggests that sodium hypochlorite has antimicrobial properties and can help in debriding necrotic tissue from wounds, which are beneficial for wound healing. However, there is also evidence indicating potential drawbacks like cytotoxicity to healthy cells and delayed epithelialization if used improperly or excessively.\n3. Given the dual nature of sodium hypochlorite's effects on wound healing (both positive in terms of infection control and negative in terms of cell toxicity), the claim requires a nuanced evaluation, making it not purely true but also not false due to its context-dependent benefits.",
+          "choice": "C"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_69",
+      "question": "Do earrings cause discomfort by destroying acupuncture points or meridians?",
+      "gt_answer": "C",
+      "gt_label": "1",
+      "pred_answer": "B",
+      "pred_label": "False",
+      "correct": false,
+      "time_seconds": 3.7002761363983154,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "B": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "1. The core health claim is that earrings cause discomfort by destroying acupuncture points or meridians.\n2. There is no scientific evidence supporting the existence of acupuncture points or meridians outside of traditional Chinese medicine, and there is no medical evidence suggesting that wearing earrings can destroy these points or meridians. Acupuncture theory is not based on anatomical structures recognized in Western medicine but rather on concepts from traditional Chinese medicine.\n3. The claim does not have any true elements as it relies on a theoretical framework (acupuncture) that is not supported by modern medical evidence and there is no scientific basis for earrings causing destruction of such points or meridians.",
+          "choice": "B"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_70",
+      "question": "Does the intake of black cumin improve the symptoms of asthma, e.g. shortness of breath?",
+      "gt_answer": "C",
+      "gt_label": "1",
+      "pred_answer": "C",
+      "pred_label": "Mixture",
+      "correct": true,
+      "time_seconds": 3.6918203830718994,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "C": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "1. The core health claim is that the intake of black cumin improves symptoms of asthma, specifically shortness of breath.\n2. Evidence on this topic is mixed; some studies suggest potential benefits for respiratory conditions while others do not show significant effects or are inconclusive due to methodological limitations. However, there isn't strong evidence supporting a clear causal relationship between black cumin intake and improvement in asthma symptoms like shortness of breath.\n3. Given the lack of robust clinical trials showing consistent positive results, it's important to note that while some individuals might experience benefits from black cumin due to its anti-inflammatory properties, this cannot be generalized as a proven treatment for asthma symptoms across all patients.",
+          "choice": "C"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_71",
+      "question": "Is milk thistle extract an effective treatment for liver disease?",
+      "gt_answer": "C",
+      "gt_label": "1",
+      "pred_answer": "C",
+      "pred_label": "Mixture",
+      "correct": true,
+      "time_seconds": 3.4022579193115234,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "C": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "1. The core health claim is that milk thistle extract is an effective treatment for liver disease.\n2. Evidence suggests that milk thistle may have some benefits for liver health, particularly in the context of alcohol-related liver disease and non-alcoholic fatty liver disease (NAFLD). However, the evidence supporting its efficacy is mixed and not conclusive. Some studies show potential benefits, while others do not find significant improvements.\n3. Given the variable results across different studies and conditions, it's important to recognize that milk thistle may have some benefits in certain contexts but lacks strong, consistent evidence as a definitive treatment for liver disease overall.",
+          "choice": "C"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_72",
+      "question": "Does an extract from grapefruit seeds work against fungal diseases such as athlete's foot or nail fungus?",
+      "gt_answer": "C",
+      "gt_label": "1",
+      "pred_answer": "C",
+      "pred_label": "Mixture",
+      "correct": true,
+      "time_seconds": 3.5281550884246826,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "C": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "1. The core health claim is that an extract from grapefruit seeds can work against fungal diseases such as athlete's foot or nail fungus.\n2. Evidence suggests that grapefruit seed extract (GSE) has antimicrobial properties, including some activity against certain fungi. However, the evidence for its efficacy in treating specific conditions like athlete's foot or nail fungus is limited and not well-established compared to FDA-approved antifungal medications.\n3. There is a lack of strong clinical trial data supporting GSE as an effective treatment for these fungal infections, making it difficult to categorize this claim as fully true without qualification.",
+          "choice": "C"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_73",
+      "question": "Does taking probiotics during pregnancy and early life protect children from atopic dermatitis?",
+      "gt_answer": "A",
+      "gt_label": "0",
+      "pred_answer": "C",
+      "pred_label": "Mixture",
+      "correct": false,
+      "time_seconds": 4.0945587158203125,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "C": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "1. The core health claim is that taking probiotics during pregnancy and early life protects children from atopic dermatitis.\n2. Evidence supporting this claim includes several studies showing a reduction in the incidence of atopic dermatitis when mothers take probiotics during pregnancy or when infants receive probiotics early in life. However, results vary depending on the specific strain of probiotic used and the population studied.\n3. There is nuance to consider: while some studies support this claim, others do not show significant benefits, indicating that the effectiveness may depend on factors such as timing, dosage, and type of probiotics used. Therefore, it's important to recognize both supportive evidence and limitations in the consistency of results across different populations and conditions.\n",
+          "choice": "C"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_74",
+      "question": "Can a bioresonance device like \"Bioscan\" or \"Vieva Vital Analyser\" measure mineral and vitamin deficiencies or detect health problems?",
+      "gt_answer": "B",
+      "gt_label": "2",
+      "pred_answer": "B",
+      "pred_label": "False",
+      "correct": true,
+      "time_seconds": 3.7481935024261475,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "B": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "1. The core claim is that bioresonance devices such as 'Bioscan' or 'Vieva Vital Analyser' can measure mineral and vitamin deficiencies or detect health problems.\n2. There is no scientific evidence supporting the efficacy of these devices in measuring nutrient levels or diagnosing medical conditions. Bioresonance therapy lacks clinical validation and has not been endorsed by major healthcare organizations such as the FDA, WHO, or reputable medical societies for its claimed functions.\n3. Given that there are established methods like blood tests for assessing vitamin and mineral deficiencies, and these bioresonance devices have no proven efficacy, the claim is entirely unsupported by evidence.",
+          "choice": "B"
         }
       ]
     }

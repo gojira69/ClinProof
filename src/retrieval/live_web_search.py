@@ -168,13 +168,18 @@ class LiveWebSearchRetriever:
                     search_query_idx=0,
                     claim_terms=claim_terms,
                 )
-                doc["content"] = self._format_content(doc)
+                # Delay scraping until we have selected the top-k docs
+                doc["content"] = self._format_content(doc, scrape=False)
                 existing = candidates.get(doc["url"])
                 if existing is None or doc["score"] > existing["score"]:
                     candidates[doc["url"]] = doc
 
         docs = sorted(candidates.values(), key=lambda d: d["score"], reverse=True)
         docs = self._diversify_by_domain(docs, k)
+        
+        # Scrape full text for the final selected documents
+        for doc in docs:
+            doc["content"] = self._format_content(doc, scrape=True)
         scores = [float(d["score"]) for d in docs]
         self._memory_cache[cache_key] = (list(docs), list(scores))
         return docs, scores
@@ -255,7 +260,7 @@ class LiveWebSearchRetriever:
             return 0.5
         return 0.0
 
-    def _format_content(self, doc: dict) -> str:
+    def _format_content(self, doc: dict, scrape: bool = False) -> str:
         parts = [
             f"URL: {doc.get('url', '')}",
             f"Domain: {doc.get('domain', '')}",
@@ -263,12 +268,36 @@ class LiveWebSearchRetriever:
         ]
         if doc.get("published_date"):
             parts.append(f"Published: {doc['published_date']}")
-        if doc.get("snippet"):
+            
+        full_text = ""
+        if scrape and doc.get("url"):
+            try:
+                import requests
+                from bs4 import BeautifulSoup
+                headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}
+                resp = requests.get(doc["url"], timeout=4, headers=headers)
+                if resp.status_code == 200:
+                    soup = BeautifulSoup(resp.content, "html.parser")
+                    for script in soup(["script", "style", "nav", "footer", "header"]):
+                        script.extract()
+                    text = soup.get_text(separator=' ')
+                    lines = (line.strip() for line in text.splitlines())
+                    chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
+                    text = ' '.join(chunk for chunk in chunks if chunk)
+                    # Limit to ~3000 chars to avoid blowing up context window
+                    full_text = text[:3500]
+            except Exception as e:
+                log.warning(f"Failed to scrape {doc.get('url', '')}: {e}")
+
+        if full_text and len(full_text) > 100:
+            parts.append(f"Content:\n{full_text}")
+        elif doc.get("snippet"):
             parts.append(f"Snippet: {doc['snippet']}")
+            
         parts.append(
-            "Runtime note: This live web snippet is weak secondary evidence and requires human verification."
+            "Runtime note: This live web snippet/article is weak secondary evidence and requires human verification."
         )
-        return " ".join(parts)
+        return "\n".join(parts)
 
     def _diversify_by_domain(self, docs: list[dict], k: int) -> list[dict]:
         selected: list[dict] = []
