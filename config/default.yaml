@@ -22,6 +22,12 @@ retrieval:
   moe:
     domains: ["pharmacology", "anatomy", "clinical", "general"]
 
+live_search:
+  enabled: false
+  k: 5
+  region: "in-en"
+  timeout: 8
+
 compression:
   enabled: true
   budget_ratio: 0.4

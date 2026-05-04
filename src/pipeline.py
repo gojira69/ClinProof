@@ -17,6 +17,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from src.retrieval.bm25_retriever import BM25Retriever
 from src.retrieval.dense_retriever import DenseRetriever
 from src.retrieval.graph_retriever import GraphRetriever
+from src.retrieval.live_web_search import LiveWebSearchRetriever
 from src.retrieval.moe_retriever import MoERetriever
 from src.compression.extractor import ExtractiveCompressor
 from src.generation.ollama_llm import OllamaLLM
@@ -63,6 +64,7 @@ class ClinProof:
         self.dense = None
         self.graph = None
         self.moe = None
+        self.live_web = None
 
         if retrieval_mode in ("bm25", "moe_flat", "moe_graph"):
             try:
@@ -86,12 +88,20 @@ class ClinProof:
             except Exception as e:
                 log.warning(f"GraphRAG init failed: {e}")
 
+        live_cfg = self.config.get("live_search", {})
+        if live_cfg.get("enabled", False):
+            self.live_web = LiveWebSearchRetriever(
+                timeout=live_cfg.get("timeout", 8)
+            )
+            log.info("Live DDGS retriever ready")
+
         if retrieval_mode in ("moe_flat", "moe_graph"):
             self.moe = MoERetriever(
                 graph_retriever=self.graph,
                 bm25_retriever=self.bm25,
                 dense_retriever=self.dense,
-                config=self.config
+                config=self.config,
+                live_web_retriever=self.live_web,
             )
             log.info("MoE retriever ready")
 
@@ -190,7 +200,14 @@ class ClinProof:
         elif mode == "graph" and self.graph:
             return self.graph.retrieve(question, k)
         elif self.moe:
-            return self.moe.retrieve(question, k1=k)
+            live_cfg = self.config.get("live_search", {})
+            return self.moe.retrieve(
+                question,
+                k1=k,
+                enable_live_search=live_cfg.get("enabled", False),
+                live_search_k=live_cfg.get("k", 5),
+                live_search_region=live_cfg.get("region", "in-en"),
+            )
         elif self.bm25:
             return self.bm25.retrieve(question, k)
         return [], []

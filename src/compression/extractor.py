@@ -7,10 +7,33 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 log = logging.getLogger("extractor")
+LIVE_WEB_SOURCE = "duckduckgo_live"
 
 
 def sent_tokenize(text):
     return [s.strip() for s in re.split(r'(?<=[.!?])\s+', text.strip()) if len(s.strip()) > 20]
+
+
+def _display_title(doc):
+    title = doc.get("title", "")
+    if doc.get("source") == LIVE_WEB_SOURCE:
+        return f"Live Web Evidence: {title}"
+    return title
+
+
+def _display_content(doc):
+    if doc.get("source") == LIVE_WEB_SOURCE:
+        parts = [
+            f"URL: {doc.get('url', '')}",
+            f"Domain: {doc.get('domain', '')}",
+            f"Retrieved at: {doc.get('retrieved_at', '')}",
+        ]
+        if doc.get("published_date"):
+            parts.append(f"Published: {doc.get('published_date')}")
+        if doc.get("snippet"):
+            parts.append(f"Snippet: {doc.get('snippet')}")
+        return ". ".join(p for p in parts if p)
+    return doc.get("content", "")
 
 
 class ExtractiveCompressor:
@@ -27,7 +50,8 @@ class ExtractiveCompressor:
         # Flatten to sentences
         sents, doc_idx = [], []
         for i, doc in enumerate(docs):
-            title, content = doc.get("title",""), doc.get("content","")
+            title = _display_title(doc)
+            content = _display_content(doc)
             for s in sent_tokenize(f"{title}. {content}" if title else content):
                 sents.append(s); doc_idx.append(i)
         if not sents:
@@ -59,11 +83,14 @@ class ExtractiveCompressor:
             di = doc_idx[si]
             if di != cur_doc:
                 doc_counter += 1; cur_doc = di
-                parts.append(f"\nDocument [{doc_counter}] (Title: {docs[di].get('title','Unknown')}) ")
+                parts.append(f"\nDocument [{doc_counter}] (Title: {_display_title(docs[di]) or 'Unknown'}) ")
             parts.append(sents[si])
         result = " ".join(parts)
         log.debug(f"Compressor: {len(sents)} sents -> {len(selected)} ({len(result)} chars)")
         return result
 
     def _raw_context(self, docs):
-        return "\n".join(f"Document [{i+1}] (Title: {d.get('title','')}) {d.get('content','')}" for i, d in enumerate(docs))
+        return "\n".join(
+            f"Document [{i+1}] (Title: {_display_title(d)}) {_display_content(d)}"
+            for i, d in enumerate(docs)
+        )

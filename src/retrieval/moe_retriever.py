@@ -51,12 +51,30 @@ DOMAIN_HOPS = {
 class MoERetriever:
     """Domain-aware GraphRAG router.  No BM25/textbook corpus used."""
 
-    def __init__(self, graph_retriever, bm25_retriever, dense_retriever, config, ollama_client=None):
+    def __init__(
+        self,
+        graph_retriever,
+        bm25_retriever,
+        dense_retriever,
+        config,
+        live_web_retriever=None,
+        ollama_client=None,
+    ):
         self.graph = graph_retriever
         # bm25 / dense kept as params for backwards-compatibility but intentionally unused
         self.config = config
+        self.live_web = live_web_retriever
         self.model_name = config.get("model", {}).get("name", "mistral:7b")
         self.ollama = ollama_client or OllamaClient()
+        self.last_live_search_meta = {
+            "enabled": False,
+            "attempted": False,
+            "queries": [],
+            "region": None,
+            "k": 0,
+            "results": 0,
+            "error": None,
+        }
 
     def classify_domain(self, query):
         q = query.lower()
@@ -82,7 +100,19 @@ class MoERetriever:
             pass
         return "general"
 
-    def retrieve(self, query, k1=32, k2=5, options=None, enable_pubmed=True, pubmed_mode="pmc"):
+    def retrieve(
+        self,
+        query,
+        k1=32,
+        k2=5,
+        options=None,
+        enable_pubmed=True,
+        pubmed_mode="pmc",
+        enable_live_search=False,
+        live_search_k=5,
+        live_search_region="in-en",
+        live_search_queries=None,
+    ):
         """
         Route query to:
           - GraphRAG (domain-aware edge priorities + hop depth)
@@ -94,6 +124,15 @@ class MoERetriever:
         max_hops       = DOMAIN_HOPS.get(domain, 3)
 
         result_pools = []  # list of (docs, scores, weight)
+        self.last_live_search_meta = {
+            "enabled": bool(enable_live_search and self.live_web),
+            "attempted": False,
+            "queries": [q for q in (live_search_queries or []) if q],
+            "region": live_search_region,
+            "k": live_search_k,
+            "results": 0,
+            "error": None,
+        }
 
         # ── GraphRAG (always used) ───────────────────────────────────────────
         if self.graph:
@@ -128,6 +167,27 @@ class MoERetriever:
             except Exception as e:
                 log.warning(f"PubMed dense retriever failed: {e}")
 
+        # ── Live DDGS web retriever (optional, weak secondary evidence) ─────
+        if self.live_web and enable_live_search:
+            live_queries = [q for q in (live_search_queries or [query]) if q and str(q).strip()]
+            self.last_live_search_meta.update({
+                "attempted": True,
+                "queries": live_queries,
+            })
+            try:
+                live_docs, live_scores = self.live_web.multi_retrieve(
+                    live_queries,
+                    k=live_search_k,
+                    region=live_search_region,
+                )
+                self.last_live_search_meta["results"] = len(live_docs)
+                live_w = 0.2 if result_pools else 1.0
+                if live_docs:
+                    result_pools.append((live_docs, live_scores, live_w))
+            except Exception as e:
+                self.last_live_search_meta["error"] = str(e)
+                log.warning(f"Live DDGS retriever failed: {e}")
+
         if not result_pools:
             return [], []
         if len(result_pools) == 1:
@@ -140,7 +200,7 @@ class MoERetriever:
         rrf_scores, doc_registry = {}, {}
         for docs, scores, weight in result_pools:
             for rank, doc in enumerate(docs):
-                doc_id = (doc.get("PMID") or doc.get("id") or
+                doc_id = (doc.get("url") or doc.get("PMID") or doc.get("id") or
                           doc.get("title", "")[:40])
                 rrf_scores[doc_id] = (rrf_scores.get(doc_id, 0.0) +
                                       weight / (rrf_k + rank + 1))
