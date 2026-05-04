@@ -32,6 +32,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.generation.ollama_llm import OllamaLLM
+from src.evaluation.metrics import compute_classification_metrics
 from src.utils.paths import load_yaml_config, project_path
 
 
@@ -191,11 +192,13 @@ def answer_without_retrieval(
 
 
 def save_checkpoint(out_path: str, results: list, correct: int, total: int, config: dict, final: bool = False) -> None:
+    cls = compute_classification_metrics(results)
     payload = {
         "config": config,
         "complete": final,
         "progress": f"{len(results)}/{total}",
         "accuracy": (correct / total) if total else 0.0,
+        "classification_metrics": cls,
         "results": results,
     }
     with open(out_path, "w", encoding="utf-8") as f:
@@ -314,8 +317,15 @@ def run_eval(
         save_checkpoint(out_path, results, correct, len(questions), run_config)
 
     save_checkpoint(out_path, results, correct, len(questions), run_config, final=True)
-    accuracy = correct / len(questions) if questions else 0.0
-    print(f"\n  Final Accuracy: {correct}/{len(questions)} ({accuracy*100:.1f}%)")
+    cls = compute_classification_metrics(results)
+    print(
+        f"\n  Final Metrics: "
+        f"Acc={cls['accuracy']*100:.1f}% "
+        f"P={cls['precision']*100:.1f}% "
+        f"R={cls['recall']*100:.1f}% "
+        f"F1={cls['f1']*100:.1f}%"
+    )
+    print(f"  Correct: {correct}/{len(questions)}")
     return 0
 
 

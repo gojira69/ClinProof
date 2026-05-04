@@ -43,6 +43,7 @@ from src.retrieval.live_web_search     import LiveWebSearchRetriever
 from src.retrieval.moe_retriever       import MoERetriever
 from src.compression.extractor         import ExtractiveCompressor
 from src.generation.ollama_llm         import OllamaLLM
+from src.evaluation.metrics            import compute_classification_metrics
 from src.utils.paths import load_yaml_config, project_path
 
 # ── Logging ───────────────────────────────────────────────────────────────────
@@ -658,15 +659,27 @@ def answer_with_calibration(llm_list, question, options, context, system_prompt,
 
 def _save_checkpoint(out_path, results, correct, total, config_snap, final=False):
     acc = correct / total if total else 0.0
+    cls = compute_classification_metrics(results)
     payload = {
         "config":   config_snap,
         "complete": final,
         "progress": f"{len(results)}/{total}",
         "accuracy": acc,
+        "classification_metrics": cls,
         "results":  results,
     }
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(payload, f, indent=2, ensure_ascii=False)
+
+
+def _summary_metrics_line(label: str, out_path: str) -> str:
+    with open(out_path, "r", encoding="utf-8") as f:
+        payload = json.load(f)
+    cls = payload.get("classification_metrics") or compute_classification_metrics(payload.get("results", []))
+    return (
+        f"  {label:<12}: Acc={cls['accuracy']:.1%} "
+        f"P={cls['precision']:.1%} R={cls['recall']:.1%} F1={cls['f1']:.1%}"
+    )
 
 
 def run_eval(
@@ -829,7 +842,15 @@ def run_eval(
 
     acc = correct / len(questions) if questions else 0.0
     _save_checkpoint(out_path, results, correct, len(questions), config_snap, final=True)
-    print(f"\n  {name} Final Accuracy: {correct}/{len(questions)} ({acc*100:.1f}%)")
+    cls = compute_classification_metrics(results)
+    print(
+        f"\n  {name} Final Metrics: "
+        f"Acc={acc*100:.1f}% "
+        f"P={cls['precision']*100:.1f}% "
+        f"R={cls['recall']*100:.1f}% "
+        f"F1={cls['f1']*100:.1f}%"
+    )
+    print(f"  Correct: {correct}/{len(questions)}")
     return acc
 
 
@@ -1040,7 +1061,7 @@ if __name__ == "__main__":
             has_maybe=False, enable_pubmed=CONFIG["use_pubmed"],
             uncertainty_choice=None,
         )
-        summary_lines.append(f"  MedQA-US    : {acc:.1%}")
+        summary_lines.append(_summary_metrics_line("MedQA-US", _path("medqa")))
 
     # ── MedChangeQA ───────────────────────────────────────────────────────
     if run in ("all", "medchangeqa"):
@@ -1053,7 +1074,7 @@ if __name__ == "__main__":
             label_inv=MEDCHG_INV,
             uncertainty_choice="C",
         )
-        summary_lines.append(f"  MedChangeQA : {acc:.1%}")
+        summary_lines.append(_summary_metrics_line("MedChangeQA", _path("medchangeqa")))
 
     # ── BioASQ ────────────────────────────────────────────────────────────
     if run in ("all", "bioasq"):
@@ -1066,7 +1087,7 @@ if __name__ == "__main__":
             label_inv=BIOASQ_INV,
             uncertainty_choice=None,
         )
-        summary_lines.append(f"  BioASQ      : {acc:.1%}")
+        summary_lines.append(_summary_metrics_line("BioASQ", _path("bioasq")))
 
     # ── SciFact (test split) ──────────────────────────────────────────────
     if run in ("all", "scifact"):
@@ -1079,7 +1100,7 @@ if __name__ == "__main__":
             label_inv=SCIFACT_INV,
             uncertainty_choice="C",
         )
-        summary_lines.append(f"  SciFact     : {acc:.1%}")
+        summary_lines.append(_summary_metrics_line("SciFact", _path("scifact_test")))
 
     # ── HealthFC (test split) ─────────────────────────────────────────────
     if run in ("all", "healthfc"):
@@ -1092,7 +1113,7 @@ if __name__ == "__main__":
             label_inv=HEALTHFC_INV,
             uncertainty_choice=None,
         )
-        summary_lines.append(f"  HealthFC    : {acc:.1%}")
+        summary_lines.append(_summary_metrics_line("HealthFC", _path("healthfc_test")))
 
     print("\n".join(summary_lines))
     print()

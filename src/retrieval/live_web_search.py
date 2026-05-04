@@ -144,48 +144,40 @@ class LiveWebSearchRetriever:
 
         ddgs = DDGS(timeout=self.timeout)
         for query_idx, query in enumerate(cleaned_queries):
-            for search_query_idx, search_query in enumerate(self._search_plan(query, region)):
-                try:
-                    results = ddgs.text(
-                        search_query,
-                        region=region,
-                        safesearch="off",
-                        max_results=max(k * 2, 8),
-                        backend=self.backend,
-                    ) or []
-                except Exception as e:
-                    log.warning(f"DDGS live search failed for '{search_query[:80]}': {e}")
-                    continue
+            try:
+                results = ddgs.text(
+                    query,
+                    region=region,
+                    safesearch="off",
+                    max_results=max(k * 3, 10),
+                    backend=self.backend,
+                ) or []
+            except Exception as e:
+                log.warning(f"DDGS live search failed for '{query[:80]}': {e}")
+                continue
 
-                claim_terms = _tokenize(query)
-                for rank, result in enumerate(results):
-                    doc = self._normalise_result(result, retrieved_at=now_iso)
-                    if not doc:
-                        continue
-                    doc["score"] = self._score_result(
-                        doc=doc,
-                        rank=rank,
-                        query_idx=query_idx,
-                        search_query_idx=search_query_idx,
-                        claim_terms=claim_terms,
-                    )
-                    doc["content"] = self._format_content(doc)
-                    existing = candidates.get(doc["url"])
-                    if existing is None or doc["score"] > existing["score"]:
-                        candidates[doc["url"]] = doc
+            claim_terms = _tokenize(query)
+            for rank, result in enumerate(results):
+                doc = self._normalise_result(result, retrieved_at=now_iso)
+                if not doc:
+                    continue
+                doc["score"] = self._score_result(
+                    doc=doc,
+                    rank=rank,
+                    query_idx=query_idx,
+                    search_query_idx=0,
+                    claim_terms=claim_terms,
+                )
+                doc["content"] = self._format_content(doc)
+                existing = candidates.get(doc["url"])
+                if existing is None or doc["score"] > existing["score"]:
+                    candidates[doc["url"]] = doc
 
         docs = sorted(candidates.values(), key=lambda d: d["score"], reverse=True)
         docs = self._diversify_by_domain(docs, k)
         scores = [float(d["score"]) for d in docs]
         self._memory_cache[cache_key] = (list(docs), list(scores))
         return docs, scores
-
-    def _search_plan(self, query: str, region: str) -> list[str]:
-        plan = [query]
-        domains = self._priority_domains(region)
-        for domain in domains[:4]:
-            plan.append(f"site:{domain} {query}")
-        return plan
 
     def _priority_domains(self, region: str) -> list[str]:
         region = (region or "").lower()

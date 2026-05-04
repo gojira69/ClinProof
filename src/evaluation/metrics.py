@@ -1,5 +1,5 @@
 """
-ClinProof Evaluation Metrics: accuracy + citation evaluation
+ClinProof Evaluation Metrics: classification + citation evaluation
 """
 import os, re, json, logging
 import numpy as np
@@ -25,6 +25,54 @@ def compute_accuracy(results):
         total += 1
         if normalize_answer(str(gt)) == normalize_answer(str(pred)): correct += 1
     return {"accuracy": correct/total if total else 0.0, "correct": correct, "total": total, "skipped": skipped}
+
+
+def compute_classification_metrics(results, pred_field="pred_answer", gt_field="gt_answer"):
+    """Compute accuracy plus macro precision/recall/F1 from result records."""
+    pairs = []
+    for r in results:
+        gt = normalize_answer(r.get(gt_field, ""))
+        pred = normalize_answer(r.get(pred_field, ""))
+        if gt and pred:
+            pairs.append((gt, pred))
+
+    labels = sorted({gt for gt, _ in pairs} | {pred for _, pred in pairs})
+    per_class = {}
+
+    for label in labels:
+        tp = sum(1 for gt, pred in pairs if gt == label and pred == label)
+        fp = sum(1 for gt, pred in pairs if gt != label and pred == label)
+        fn = sum(1 for gt, pred in pairs if gt == label and pred != label)
+        precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
+        recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+        f1 = (2 * precision * recall / (precision + recall)
+              if (precision + recall) > 0 else 0.0)
+        per_class[label] = {
+            "precision": precision,
+            "recall": recall,
+            "f1": f1,
+            "support": tp + fn,
+            "tp": tp,
+        }
+
+    total = len(pairs)
+    correct = sum(1 for gt, pred in pairs if gt == pred)
+    macro_precision = (float(np.mean([m["precision"] for m in per_class.values()]))
+                       if per_class else 0.0)
+    macro_recall = (float(np.mean([m["recall"] for m in per_class.values()]))
+                    if per_class else 0.0)
+    macro_f1 = (float(np.mean([m["f1"] for m in per_class.values()]))
+                if per_class else 0.0)
+
+    return {
+        "accuracy": correct / total if total else 0.0,
+        "precision": macro_precision,
+        "recall": macro_recall,
+        "f1": macro_f1,
+        "correct": correct,
+        "total": total,
+        "per_class": per_class,
+    }
 
 
 class CitationEvaluator:
@@ -109,6 +157,11 @@ def print_results_table(metrics, system_name="ClinProof"):
     print(f"\n{'='*55}\n  {system_name}\n{'='*55}")
     a = metrics.get("accuracy",{})
     print(f"  Accuracy: {a.get('accuracy',0):.4f}  ({a.get('correct',0)}/{a.get('total',0)})")
+    cls = metrics.get("classification", {})
+    if cls:
+        print(f"  Macro Precision: {cls.get('precision',0):.4f}")
+        print(f"  Macro Recall:    {cls.get('recall',0):.4f}")
+        print(f"  Macro F1:        {cls.get('f1',0):.4f}")
     c = metrics.get("citation",{})
     if c:
         print(f"  Citation Recall:    {c.get('recall',0):.4f}")

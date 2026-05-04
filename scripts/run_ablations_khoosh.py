@@ -132,10 +132,10 @@ def build_cmd(exp: Experiment,
         else:
             parts.append("--no-kg")
 
-        if exp.use_pubmed:
-            parts.append("--use-pubmed")
-        else:
-            parts.append("--no-pubmed")
+        # if exp.use_pubmed:
+            # parts.append("--use-pubmed")
+        # else:
+        parts.append("--no-pubmed")
 
         if exp.enable_live_search:
             parts.append("--enable-live-search")
