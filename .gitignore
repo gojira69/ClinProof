@@ -2,6 +2,8 @@
 data/
 logs/
 pubmed_download/
+docs/
+figures/
 
 # Old log files
 *.log

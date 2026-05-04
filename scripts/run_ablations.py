@@ -342,6 +342,15 @@ EXPERIMENTS: List[Experiment] = [
         votes=3, no_kg=True, no_decomp=True,
         datasets=["healthfc"],
     ),
+    Experiment(
+        tag="BEST1_no_decomp",
+        experiment_id="E3",
+        group="E",
+        description="Best Config (Dense+BM25): Qwen2.5, 3-vote, NO atomic decomp",
+        models=["qwen2.5:14b"],
+        votes=3, no_kg=True, use_pubmed=True, no_decomp=True,
+        datasets=["healthfc"],
+    ),
 
     # ==========================================================================
     # EXP F: Best Ensemble + Recency (MedChangeQA)
@@ -478,6 +487,29 @@ EXPERIMENTS: List[Experiment] = [
         extra_flags=["--nei-threshold", "0.67"],
         datasets=["medchangeqa"],
     ),
+    # ==========================================================================
+    # EXP S: Context Compression Ablations (Section 7.4)
+    # Answers: Does MMR compression improve reasoning over raw documents?
+    # ==========================================================================
+    Experiment(
+        tag="S2_comp_on",
+        experiment_id="S2",
+        group="S",
+        description="Compression ON (MMR): Qwen2.5, 1-vote, BM25-only (Fast)",
+        models=["qwen2.5:14b"],
+        votes=1, no_kg=True, use_pubmed=False,
+        datasets=["healthfc"],
+    ),
+    Experiment(
+        tag="S3_comp_off",
+        experiment_id="S3",
+        group="S",
+        description="Compression OFF (Raw Docs): Qwen2.5, 1-vote, BM25-only (Fast)",
+        models=["qwen2.5:14b"],
+        votes=1, no_kg=True, use_pubmed=False,
+        extra_flags=["--no-compression"],
+        datasets=["healthfc"],
+    ),
 ]
 
 # ── Command Builder ───────────────────────────────────────────────────────────
@@ -606,7 +638,7 @@ if __name__ == "__main__":
 
     # Filter experiments
     groups = [g.strip().upper() for g in args.group.split(
-        ",")] if args.group.lower() != "all" else ["BEST", "LIVE", "Z", "A", "B", "C", "D", "E", "F", "G1", "G2"]
+        ",")] if args.group.lower() != "all" else ["BEST", "LIVE", "Z", "A", "B", "C", "D", "E", "F", "G1", "G2", "S"]
     selected = [
         exp for exp in EXPERIMENTS
         if exp.group in groups
