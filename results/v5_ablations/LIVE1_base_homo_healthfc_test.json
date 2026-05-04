@@ -1,0 +1,1207 @@
+{
+  "config": {
+    "model": "qwen2.5:14b",
+    "decomp_model": "medllama2:7b",
+    "votes": 1,
+    "ensemble_mode": true,
+    "k": 50,
+    "bm25_candidates": 200,
+    "use_bm25": false,
+    "use_pubmed": false,
+    "use_graph": false,
+    "recency_alpha": 0.0,
+    "context_len": 25000,
+    "count": null,
+    "resume": true,
+    "checkpoint_every": 1,
+    "tag": "LIVE1_base_homo",
+    "results_dir": "/mnt/d/Harsha/AoLM/ClinProof/results/v5_ablations",
+    "experiment_id": "LIVE1",
+    "enable_live_search": true,
+    "live_search_k": 5,
+    "live_search_region": "in-en",
+    "no_compression": true,
+    "empty_evidence": false,
+    "models": [
+      "qwen2.5:14b"
+    ]
+  },
+  "complete": false,
+  "progress": "51/75",
+  "accuracy": 0.3333333333333333,
+  "results": [
+    {
+      "id": "hfc_test_0",
+      "question": "Can oral vein products containing herbal active ingredients such as rutosides, hidrosmin, diosmin, extracts of horse chestnut seed and pine bark, Centella asiatica or grape seed extract or the synthetic substances calcium dobesilate or aminaftone relieve symptoms such as itching, restless or swollen legs, pain and cramps in people suffering from varicose veins or chronic venous insufficiency?",
+      "gt_answer": "A",
+      "gt_label": "0",
+      "pred_answer": "C",
+      "pred_label": "Mixture",
+      "correct": false,
+      "time_seconds": 6.696675062179565,
+      "atomic_propositions": "None",
+      "retrieved_context": "Document [1] (Title: Therapeutic applications of natural products in the management of ...)\nURL: https://pmc.ncbi.nlm.nih.gov/articles/PMC11992006/ Domain: pmc.ncbi.nlm.nih.gov Retrieved at: 2026-05-04T05:12:27.313068+00:00 Snippet: Risk factors such as age, obesity, hormonal influences, and genetic predispositions are discussed in relation to their contribution to disease progression. The therapeutic modalities for managing venous diseases are explored, with a particular emphasis on natural products in alleviating symptoms and improving vascular health. Runtime note: This live web snippet is weak secondary evidence and requires human verification.\n\nDocument [2] (Title: Herbal drugs in chronic venous disease treatment: An update)\nURL: https://www.sciencedirect.com/science/article/pii/S0367326X24004398 Domain: sciencedirect.com Retrieved at: 2026-05-04T05:12:27.313068+00:00 Snippet: Products prepared from Ginkgo leaf (Ginkgonis folium) in the form of refined and quantified dry extracts (EGb 761) are top-selling herbal medicinal products, especially in Europe, as well as important major botanical food supplements on the world market. Runtime note: This live web snippet is weak secondary evidence and requires human verification.\n\nDocument [3] (Title: Diosmin Uses, Benefits & Dosage - Drugs.com)\nURL: https://www.drugs.com/npp/diosmin.html Domain: drugs.com Retrieved at: 2026-05-04T05:12:27.313068+00:00 Snippet: Learn about the potential benefits of Diosmin including contraindications, adverse reactions, toxicology, pharmacology and historical usage. Runtime note: This live web snippet is weak secondary evidence and requires human verification.\n\nDocument [4] (Title: Therapeutic applications of natural products in the management of ...)\nURL: https://link.springer.com/article/10.1007/s10787-025-01688-z Domain: link.springer.com Retrieved at: 2026-05-04T05:12:27.313068+00:00 Snippet: Risk factors such as age, obesity, hormonal influences, and genetic predispositions are discussed in relation to their contribution to disease progression. The therapeutic modalities for managing venous diseases are explored, with a particular emphasis on natural products in alleviating symptoms and improving vascular health. Runtime note: This live web snippet is weak secondary evidence and requires human verification.\n\nDocument [5] (Title: Diosmin - Uses, Side Effects, and More - WebMD)\nURL: https://www.webmd.com/vitamins-supplements/diosmin Domain: webmd.com Retrieved at: 2026-05-04T05:12:27.313068+00:00 Snippet: Find patient medical information for Diosmin on WebMD including its uses, side effects and safety, interactions, pictures, warnings, and user ratings Runtime note: This live web snippet is weak secondary evidence and requires human verification.",
+      "vote_distribution": {
+        "C": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "The core claim is about the efficacy of oral vein products containing specific herbal and synthetic substances in relieving symptoms associated with varicose veins or chronic venous insufficiency. The provided documents discuss natural products used for managing venous diseases, but they do not provide conclusive evidence that these specific ingredients are effective across all cases. Some studies suggest potential benefits, but the claim is too broad without specifying clinical trial results for each substance mentioned. Therefore, while there may be some truth to the efficacy of certain substances, it cannot be universally applied as true.",
+          "choice": "C"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_1",
+      "question": "Can probiotics lower blood sugar in type 2 diabetes?",
+      "gt_answer": "A",
+      "gt_label": "0",
+      "pred_answer": "C",
+      "pred_label": "Mixture",
+      "correct": false,
+      "time_seconds": 3.61845326423645,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "C": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "1. The core health claim is that probiotics can lower blood sugar in people with type 2 diabetes.\n2. Evidence from clinical trials and meta-analyses suggests a modest effect of certain probiotic strains on glycemic control, including reductions in fasting blood glucose levels and HbA1c values in individuals with type 2 diabetes. However, the magnitude of these effects is generally small and may vary depending on the specific strain or combination of probiotics used.\n3. While some studies show positive outcomes, others do not find significant benefits, indicating that the relationship between probiotics and blood sugar control is complex and context-dependent.",
+          "choice": "C"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_2",
+      "question": "Can regular exercise prevent or relieve migraine symptoms?",
+      "gt_answer": "A",
+      "gt_label": "0",
+      "pred_answer": "A",
+      "pred_label": "True",
+      "correct": true,
+      "time_seconds": 2.7406132221221924,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "A": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "1. The core health claim is that regular exercise can prevent or relieve migraine symptoms.\n2. Evidence supports this claim; studies have shown that regular aerobic exercise can reduce the frequency and intensity of migraines, likely due to its impact on stress reduction, improved mood, and enhanced cardiovascular fitness which are all factors linked to migraine triggers.\n3. There is no significant evidence suggesting a context-dependent or mixed nature regarding the effectiveness of regular exercise for preventing or relieving migraines.",
+          "choice": "A"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_3",
+      "question": "Can the genetic blood test for Down syndrome (trisomy 21) predict whether the unborn child is affected - in pregnant women at increased risk?",
+      "gt_answer": "A",
+      "gt_label": "0",
+      "pred_answer": "A",
+      "pred_label": "True",
+      "correct": true,
+      "time_seconds": 2.6918587684631348,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "A": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "The core health claim is about the accuracy of genetic blood tests for predicting Down syndrome (trisomy 21) in pregnant women at increased risk. Evidence-based medicine supports that non-invasive prenatal screening, including cell-free DNA testing, can accurately detect trisomy 21 with high sensitivity and specificity. These tests are recommended for high-risk pregnancies due to their ability to predict the condition with a very low false-positive rate.",
+          "choice": "A"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_4",
+      "question": "Does hydroxychloroquine prevent covid-19 infection???",
+      "gt_answer": "B",
+      "gt_label": "2",
+      "pred_answer": "B",
+      "pred_label": "False",
+      "correct": true,
+      "time_seconds": 2.8948442935943604,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "B": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "The core health claim is whether hydroxychloroquine can prevent COVID-19 infection. Evidence from clinical trials and systematic reviews indicates that hydroxychloroquine does not have a preventive effect against SARS-CoV-2 infection. Large-scale randomized controlled trials, such as the WHO SOLIDARITY trial, found no significant benefit in preventing infection or reducing hospitalization rates when used prophylactically. Therefore, based on current medical evidence, the claim is false.",
+          "choice": "B"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_5",
+      "question": "Can green tea protect against coronavirus infection or help treat covid-19?",
+      "gt_answer": "C",
+      "gt_label": "1",
+      "pred_answer": "B",
+      "pred_label": "False",
+      "correct": false,
+      "time_seconds": 3.22922945022583,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "B": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "The core health claim is that green tea can protect against coronavirus infection or help treat COVID-19. There is no substantial evidence from clinical trials showing that green tea has antiviral properties specific to SARS-CoV-2, the virus causing COVID-19. While green tea contains compounds like catechins which have shown some broad-spectrum antimicrobial activity in vitro, these effects do not translate into proven protection or treatment against viral infections such as SARS-CoV-2 in humans. Therefore, the claim lacks medical evidence to support it.",
+          "choice": "B"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_6",
+      "question": "Do dietary supplements with magnesium and/or zinc improve symptoms in children with ADHD?",
+      "gt_answer": "C",
+      "gt_label": "1",
+      "pred_answer": "C",
+      "pred_label": "Mixture",
+      "correct": true,
+      "time_seconds": 4.142075061798096,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "C": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "1. The core health claim is whether dietary supplements containing magnesium and/or zinc improve symptoms in children diagnosed with ADHD.\n2. Evidence from systematic reviews and meta-analyses suggests that while there are some studies indicating potential benefits of magnesium and zinc supplementation for ADHD symptoms, the overall evidence is inconclusive due to methodological limitations and heterogeneity among studies. Some studies show positive effects on symptom reduction or improvement in attention and hyperactivity, but others do not find significant differences.\n3. Given the mixed results across different studies with varying methodologies and outcomes, it's important to recognize that while there might be some evidence supporting a benefit for certain individuals, this does not universally apply to all children with ADHD. Therefore, the claim cannot be definitively supported or refuted without considering individual variability and study limitations.",
+          "choice": "C"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_7",
+      "question": "Does frankincense help with painful joint wear (osteoarthritis)?",
+      "gt_answer": "A",
+      "gt_label": "0",
+      "pred_answer": "C",
+      "pred_label": "Mixture",
+      "correct": false,
+      "time_seconds": 3.364569902420044,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "C": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "1. The core health claim is that frankincense can help alleviate symptoms of osteoarthritis, specifically joint pain and wear.\n2. Evidence from clinical studies suggests mixed results: some small-scale studies indicate potential benefits in reducing inflammation and improving mobility, but larger, more rigorous trials have shown limited efficacy or inconclusive results compared to placebo.\n3. Given the variability in study outcomes and lack of strong evidence for consistent therapeutic effects across a broad population, the claim cannot be definitively supported as true nor refuted as false; it requires context regarding individual responses and quality of research studies.",
+          "choice": "C"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_8",
+      "question": "Can the \"Miracle Mineral Supplement\" MMS (sodium chlorite) cure diseases or alleviate ailments?",
+      "gt_answer": "C",
+      "gt_label": "1",
+      "pred_answer": "B",
+      "pred_label": "False",
+      "correct": false,
+      "time_seconds": 2.9435601234436035,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "B": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "The core health claim is that 'Miracle Mineral Supplement' (MMS), which primarily contains sodium chlorite, can cure diseases or alleviate ailments. Sodium chlorite is often marketed as a miracle cure for various conditions including HIV/AIDS, cancer, and influenza. However, there is no credible scientific evidence supporting these claims. The FDA has issued warnings about the dangers of MMS due to its lack of efficacy and potential toxicity when consumed orally. Therefore, this claim is false.",
+          "choice": "B"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_9",
+      "question": "Does the juice of the aronia berry help against cystitis?",
+      "gt_answer": "C",
+      "gt_label": "1",
+      "pred_answer": "B",
+      "pred_label": "False",
+      "correct": false,
+      "time_seconds": 3.1256906986236572,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "B": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "1. The core health claim is that the juice of the aronia berry helps against cystitis (a urinary tract infection). 2. There is limited scientific evidence specifically supporting the use of aronia berry juice for treating or preventing cystitis. Most studies on aronia berries focus on their antioxidant properties and effects on cardiovascular disease, cancer, and inflammation rather than urinary tract infections. No clinical trials have conclusively proven its efficacy against cystitis. 3. Given the lack of direct evidence, this claim cannot be substantiated with medical certainty.",
+          "choice": "B"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_10",
+      "question": "Is it harmful to health to eat apple cores with the apple?",
+      "gt_answer": "B",
+      "gt_label": "2",
+      "pred_answer": "C",
+      "pred_label": "Mixture",
+      "correct": false,
+      "time_seconds": 3.439868688583374,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "C": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "1. The core health claim is that eating apple cores can be harmful to health.\n2. Evidence supports that the seeds in apple cores contain amygdalin, which releases cyanide when digested; however, the amount of seeds consumed from a single apple is unlikely to cause harm due to their small quantity and the digestive system's ability to mitigate toxins.\n3. While there is potential for toxicity with large quantities or repeated consumption, eating an occasional apple core does not pose significant health risks. However, given the presence of cyanide precursors, it is prudent to avoid regular consumption of apple seeds.\n",
+          "choice": "C"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_11",
+      "question": "Does EMDR work similarly to exposure therapy, another well-studied form of psychotherapy for the symptoms of post-traumatic stress disorder???",
+      "gt_answer": "A",
+      "gt_label": "0",
+      "pred_answer": "C",
+      "pred_label": "Mixture",
+      "correct": false,
+      "time_seconds": 3.4034910202026367,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "C": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "1. The core health claim is whether EMDR (Eye Movement Desensitization and Reprocessing) works similarly to exposure therapy for treating PTSD symptoms.\n2. Evidence supports that both EMDR and exposure therapy are effective treatments for PTSD, though they operate on different principles. Exposure therapy involves direct confrontation of traumatic memories, while EMDR uses bilateral stimulation to process traumatic experiences. However, both aim to reduce the emotional impact of trauma-related memories and improve coping mechanisms.\n3. While there is nuance in how each treatment works, the claim that they are similar in their effectiveness for PTSD symptoms is supported by evidence.",
+          "choice": "C"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_12",
+      "question": "Do sweeteners increase the risk of type 2 diabetes or sugar metabolism disorders?",
+      "gt_answer": "C",
+      "gt_label": "1",
+      "pred_answer": "C",
+      "pred_label": "Mixture",
+      "correct": true,
+      "time_seconds": 4.452146053314209,
+      "atomic_propositions": "None",
+      "retrieved_context": "Document [1] (Title: Artificial sweeteners and their implications in diabetes: a review)\nURL: https://pmc.ncbi.nlm.nih.gov/articles/PMC11233937/ Domain: pmc.ncbi.nlm.nih.gov Retrieved at: 2026-05-04T05:13:09.750076+00:00 Snippet: Diabetes is a significant global health concern, highlighting the critical role of dietary strategies in its management and prevention. Artificial sweeteners (ASs), due to their capacity to provide sweetness without contributing to caloric intake, ... Runtime note: This live web snippet is weak secondary evidence and requires human verification.\n\nDocument [2] (Title: Artificial sweeteners and Type 2 Diabetes Mellitus: A review of current ...)\nURL: https://www.sciencedirect.com/science/article/pii/S1056872725000078 Domain: sciencedirect.com Retrieved at: 2026-05-04T05:13:09.750076+00:00 Snippet: Artificial sweeteners, known for their high intense sweetness and low or zero calories, are extensively used today in food and beverage products as sugar substitutes and are sometimes recommended for weight management and Type 2 Diabetes Mellitus (T2DM) patients. Runtime note: This live web snippet is weak secondary evidence and requires human verification.\n\nDocument [3] (Title: Artificial Sweeteners and Risk of Type 2 Diabetes in the Prospective ...)\nURL: https://diabetesjournals.org/care/article/46/9/1681/153434/Artificial-Sweeteners-and-Risk-of-Type-2-Diabetes Domain: diabetesjournals.org Retrieved at: 2026-05-04T05:13:09.750076+00:00 Snippet: These findings of positive associations between artificial sweetener intakes and increased T2D risk strengthen the evidence that these additives may not be safe sugar alternatives. This study provides important insights in the context of on-going reevaluation of artificial sweeteners by health authorities worldwide. Runtime note: This live web snippet is weak secondary evidence and requires human verification.\n\nDocument [4] (Title: Everything We Know About Artificial Sweeteners and Metabolism)\nURL: https://www.healthcentral.com/condition/type-1-diabetes/how-artificial-sweeteners-affect-metabolism Domain: healthcentral.com Retrieved at: 2026-05-04T05:13:09.750076+00:00 Snippet: Researchers believe these changes may be linked to an increased risk of obesity, insulin resistance, type 2 diabetes, metabolic syndrome, and heart conditions like high blood pressure. Runtime note: This live web snippet is weak secondary evidence and requires human verification.\n\nDocument [5] (Title: Artificial sweeteners and their implications in diabetes: a review)\nURL: https://www.frontiersin.org/journals/nutrition/articles/10.3389/fnut.2024.1411560/full Domain: frontiersin.org Retrieved at: 2026-05-04T05:13:09.750076+00:00 Snippet: This review thoroughly examines the nuanced relationship between artificial sweeteners and diabetes, addressing their benefits and potential risks. ASs have been shown to aid in weight management, a key factor in reducing diabetes risk, and do not impact immediate blood glucose levels, offering improved glucose control for individuals with ... Runtime note: This live web snippet is weak secondary evidence and requires human verification.",
+      "vote_distribution": {
+        "C": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "The core health claim is whether sweeteners increase the risk of type 2 diabetes or sugar metabolism disorders. Document [3] provides evidence suggesting a positive association between artificial sweetener intake and increased T2D risk, which supports part of the claim. However, other documents like [1], [5] highlight that artificial sweeteners do not impact immediate blood glucose levels and can aid in weight management, reducing diabetes risk. This indicates a nuanced relationship where while some studies suggest an increase in risk, others indicate potential benefits or no significant harm to sugar metabolism when used appropriately.",
+          "choice": "C"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_13",
+      "question": "Are animal-assisted therapies effective for mental illness?",
+      "gt_answer": "A",
+      "gt_label": "0",
+      "pred_answer": "C",
+      "pred_label": "Mixture",
+      "correct": false,
+      "time_seconds": 4.784713506698608,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "C": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "1. The core health claim is whether animal-assisted therapies are effective for mental illness.\n2. Evidence supports the use of animal-assisted interventions (AAI) in various mental health conditions, such as reducing anxiety and depression symptoms, improving mood, and enhancing social interaction skills. Studies have shown positive effects on patients with schizophrenia, autism spectrum disorder, and post-traumatic stress disorder (PTSD).\n3. However, while there is evidence supporting the effectiveness of AAI for certain aspects of mental illness treatment, it should not be considered a standalone therapy but rather an adjunct to traditional treatments.\n4. Given that the claim does not specify which type of mental illness or the extent of its efficacy, and considering the nuanced context where AAI can be beneficial but is not universally effective across all types of mental illnesses or as a sole treatment method, it leans towards being generally true with some limitations.",
+          "choice": "C"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_14",
+      "question": "Does extract from the Damiana plant (Turnera diffusa) help with erectile dysfunction?",
+      "gt_answer": "C",
+      "gt_label": "1",
+      "pred_answer": "C",
+      "pred_label": "Mixture",
+      "correct": true,
+      "time_seconds": 3.8680646419525146,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "C": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "1. The core health claim is that Damiana plant extract (Turnera diffusa) helps with erectile dysfunction.\n2. Evidence supporting the use of Damiana for erectile dysfunction includes traditional and anecdotal uses, but scientific research is limited. Some studies suggest potential benefits due to its aphrodisiac properties and effects on mood enhancement; however, there is a lack of rigorous clinical trials specifically addressing erectile dysfunction.\n3. Given the limited evidence from controlled trials, while some support exists based on historical use and preliminary data, it cannot be definitively concluded that Damiana extract reliably helps with erectile dysfunction for everyone. Therefore, this claim requires nuance.",
+          "choice": "C"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_15",
+      "question": "Does CBD help with sleep disorders?",
+      "gt_answer": "C",
+      "gt_label": "1",
+      "pred_answer": "C",
+      "pred_label": "Mixture",
+      "correct": true,
+      "time_seconds": 3.37419056892395,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "C": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "1. The core health claim is whether CBD (cannabidiol) helps with sleep disorders.\n2. Evidence suggests that CBD may have some benefits for certain types of sleep issues, such as reducing the time it takes to fall asleep and improving overall sleep quality in individuals with anxiety or insomnia. However, the evidence is not conclusive across all types of sleep disorders and more research is needed.\n3. Given that there are both supportive studies and a lack of strong consensus across all sleep disorders, this claim has elements that support it but also limitations, making it context-dependent.",
+          "choice": "C"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_16",
+      "question": "Does the so-called blood group diet have any health benefits?",
+      "gt_answer": "C",
+      "gt_label": "1",
+      "pred_answer": "B",
+      "pred_label": "False",
+      "correct": false,
+      "time_seconds": 2.1830809116363525,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "B": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "The core claim is about the efficacy of the blood group diet in providing health benefits. The evidence from nutritional science and clinical studies does not support specific health benefits for individuals based on their ABO blood type alone. Claims made by proponents of this diet lack robust scientific backing, and general dietary guidelines that emphasize balanced nutrition are more universally beneficial.",
+          "choice": "B"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_17",
+      "question": "Does copper intake increase the risk of Alzheimer's disease?",
+      "gt_answer": "C",
+      "gt_label": "1",
+      "pred_answer": "B",
+      "pred_label": "False",
+      "correct": false,
+      "time_seconds": 2.954575538635254,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "B": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "1. The core health claim is that copper intake increases the risk of Alzheimer's disease.\n2. Evidence from medical literature does not support a direct causal link between copper intake and increased risk of Alzheimer's disease. While some studies have suggested potential associations or mechanisms linking high levels of copper to neurological effects, these findings are not conclusive and do not establish causation.\n3. There is no significant evidence that supports the claim as stated; therefore, it cannot be considered a mixture with true elements.",
+          "choice": "B"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_18",
+      "question": "Can Botox injections prevent migraine attacks?",
+      "gt_answer": "A",
+      "gt_label": "0",
+      "pred_answer": "A",
+      "pred_label": "True",
+      "correct": true,
+      "time_seconds": 3.2738876342773438,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "A": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "1. The core health claim is that Botox injections can prevent migraine attacks.\n2. Evidence supports the use of onabotulinumtoxinA (Botox) for the treatment and prevention of chronic migraines in adults who have had headaches 15 or more days a month, with eight or more hours of headache per day. Studies such as the PREEMPT trials showed that Botox can reduce the frequency and severity of migraine attacks.\n3. There is no significant nuance here; the claim aligns well with medical evidence.",
+          "choice": "A"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_19",
+      "question": "Does biotin help with hair loss? Does biotin make hair grow faster?",
+      "gt_answer": "C",
+      "gt_label": "1",
+      "pred_answer": "C",
+      "pred_label": "Mixture",
+      "correct": true,
+      "time_seconds": 3.039886713027954,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "C": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "1. The core health claim is that biotin helps with hair loss and makes hair grow faster.\n2. Evidence suggests that while biotin may improve brittle nails, the evidence for its effectiveness in treating hair loss or promoting faster hair growth is limited and inconclusive. Some studies show improvements in hair thickness but not necessarily in hair growth rate.\n3. There is nuance here as some people might report subjective benefits from taking biotin supplements, but robust scientific evidence supporting these claims is lacking.",
+          "choice": "C"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_20",
+      "question": "Do remedies with hops or valerian help with anxiety disorders?",
+      "gt_answer": "C",
+      "gt_label": "1",
+      "pred_answer": "C",
+      "pred_label": "Mixture",
+      "correct": true,
+      "time_seconds": 5.392642259597778,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "C": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "1. The core health claim is whether remedies containing hops or valerian are effective for anxiety disorders.\n2. Evidence suggests that both hops and valerian have anxiolytic (anxiety-reducing) effects, but the evidence is mixed and often based on traditional use rather than rigorous clinical trials. Valerian root has been studied more extensively and some studies suggest it may be helpful in reducing anxiety symptoms, though results are inconsistent across different populations and study designs.\n3. Hops have less direct research specifically targeting anxiety disorders, with most of the evidence coming from traditional use or preliminary studies suggesting potential benefits for sleep and relaxation which could indirectly help anxiety. However, there is no strong consensus among medical professionals regarding their efficacy in treating anxiety disorders.\n4. Given this context, while both herbs show some promise, the claim cannot be definitively supported due to lack of robust clinical evidence. Therefore, it's important to consider that the statement might not hold universally true for all individuals or conditions.",
+          "choice": "C"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_21",
+      "question": "Can apigenin reduce cancer risk or prevent cancer progression?",
+      "gt_answer": "B",
+      "gt_label": "2",
+      "pred_answer": "C",
+      "pred_label": "Mixture",
+      "correct": false,
+      "time_seconds": 4.750036001205444,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "C": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "1. The core health claim is that apigenin can reduce cancer risk or prevent cancer progression.\n2. Evidence suggests that apigenin, a flavonoid found in various plants including celery and chamomile tea, exhibits anti-cancer properties in vitro (cell cultures) and in some animal studies. It has been shown to inhibit tumor growth, induce apoptosis (programmed cell death), and suppress angiogenesis (formation of new blood vessels that feed tumors). However, the translation of these effects into human clinical trials is limited.\n3. While apigenin shows promise in laboratory settings, there is a lack of robust evidence from randomized controlled trials in humans to definitively conclude its efficacy in reducing cancer risk or preventing cancer progression. Therefore, while there are elements that support potential benefits (making it not entirely false), the claim cannot be fully substantiated due to insufficient human clinical data.",
+          "choice": "C"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_22",
+      "question": "Can remedies from the iambul tree improve blood glucose control in diabetes or precursors of diabetes (\"pre-diabetes\")?",
+      "gt_answer": "C",
+      "gt_label": "1",
+      "pred_answer": "B",
+      "pred_label": "False",
+      "correct": false,
+      "time_seconds": 2.9274635314941406,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "B": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "1. The core health claim is that remedies from the iambul tree can improve blood glucose control in diabetes or pre-diabetes.\n2. There is no scientific evidence supporting the use of iambul tree remedies for improving blood glucose control in diabetes or pre-diabetes. No clinical trials have been conducted to establish efficacy and safety.\n3. Given the lack of supportive medical evidence, there are no true elements to consider alongside false ones that would warrant a MIXTURE verdict.",
+          "choice": "B"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_23",
+      "question": "Does extra folic acid in men help prevent birth defects in children?",
+      "gt_answer": "C",
+      "gt_label": "1",
+      "pred_answer": "B",
+      "pred_label": "False",
+      "correct": false,
+      "time_seconds": 3.03426456451416,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "B": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "1. The core health claim is that extra folic acid intake by men can help prevent birth defects in their children.\n2. Evidence shows that folic acid primarily benefits women, particularly before and during early pregnancy, as it helps reduce the risk of neural tube defects in the fetus. There is limited evidence supporting a direct benefit of paternal folic acid supplementation on preventing birth defects in offspring.\n3. Given this context, the claim focuses on an area where there is insufficient or conflicting evidence to support its validity.",
+          "choice": "B"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_24",
+      "question": "Does following a Mediterranean diet decrease the likelihood of cardiovascular disease in people at high risk?",
+      "gt_answer": "A",
+      "gt_label": "0",
+      "pred_answer": "A",
+      "pred_label": "True",
+      "correct": true,
+      "time_seconds": 2.664283275604248,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "A": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "The core health claim is whether following a Mediterranean diet decreases the likelihood of cardiovascular disease in people at high risk. Evidence from multiple randomized controlled trials, such as the PREDIMED study, supports this claim by showing significant reductions in cardiovascular events among participants who followed a Mediterranean diet supplemented with extra virgin olive oil or nuts compared to those on a low-fat control diet. This evidence is robust and consistent across various populations at high risk for cardiovascular disease.",
+          "choice": "A"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_25",
+      "question": "Do electric toothbrushes protect oral health better than manual brushes?",
+      "gt_answer": "A",
+      "gt_label": "0",
+      "pred_answer": "C",
+      "pred_label": "Mixture",
+      "correct": false,
+      "time_seconds": 3.9683337211608887,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "C": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "1. The core health claim is that electric toothbrushes protect oral health better than manual brushes.\n2. Evidence supports this claim, as numerous studies have shown that electric toothbrushes can be more effective at removing plaque and reducing gingivitis compared to manual brushing when used correctly. Features such as oscillating heads and pressure sensors in some models help users maintain proper technique and avoid over-brushing which can damage gums.\n3. However, there is nuance: the effectiveness of an electric toothbrush depends on its features and how it's used. A poorly designed or improperly used electric brush may not offer significant benefits over a manual one. Additionally, both types of brushes are effective when used correctly with good oral hygiene practices.",
+          "choice": "C"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_26",
+      "question": "Does flu vaccination reduce the likelihood of getting the flu (influenza)?",
+      "gt_answer": "A",
+      "gt_label": "0",
+      "pred_answer": "A",
+      "pred_label": "True",
+      "correct": true,
+      "time_seconds": 3.4281625747680664,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "A": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "1. The core health claim is that flu vaccination reduces the likelihood of getting the flu (influenza). 2. Evidence from numerous studies and public health organizations, such as the CDC, supports this claim. Vaccines are designed to stimulate an immune response, thereby reducing infection rates or lessening the severity of symptoms if infected. 3. While the vaccine is effective in reducing the likelihood of getting the flu, its efficacy can vary based on factors like age, overall health status, and how well the vaccine matches circulating influenza strains, but it does not mean the claim itself is false or mixed.",
+          "choice": "A"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_27",
+      "question": "Can the consumption of caffeine during pregnancy harm the unborn child?",
+      "gt_answer": "C",
+      "gt_label": "1",
+      "pred_answer": "C",
+      "pred_label": "Mixture",
+      "correct": true,
+      "time_seconds": 3.8676023483276367,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "C": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "1. The core health claim is that consuming caffeine during pregnancy can harm the unborn child.\n2. Evidence suggests a moderate amount of caffeine (less than 200 mg/day) may not significantly increase the risk of miscarriage or low birth weight, but higher intakes might be associated with adverse outcomes such as increased risk of miscarriage and lower birth weight. The evidence is nuanced; while some studies suggest potential harm at high levels, others do not find significant risks.\n3. Given that there are varying degrees of risk depending on the amount consumed, this claim cannot be definitively true or false without specifying the quantity.",
+          "choice": "C"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_28",
+      "question": "Does the \"Rolfing\" treatment cause an improvement of body malpositions as well as certain pains?",
+      "gt_answer": "C",
+      "gt_label": "1",
+      "pred_answer": "C",
+      "pred_label": "Mixture",
+      "correct": true,
+      "time_seconds": 3.2989137172698975,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "C": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "1. The core health claim is that Rolfing treatment leads to improvements in body malpositions and certain pains.\n2. Evidence supports the use of Rolfing for improving posture, reducing pain, and enhancing overall well-being. Studies have shown positive effects on chronic back pain, fibromyalgia symptoms, and general musculoskeletal issues. However, evidence is generally low to moderate quality and more research is needed.\n3. Given that there is some supportive evidence but also limitations in the strength of the studies, a MIXTURE verdict might be appropriate due to context-dependency and varying outcomes among individuals.",
+          "choice": "C"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_29",
+      "question": "Can sexual activity relieve headaches?",
+      "gt_answer": "C",
+      "gt_label": "1",
+      "pred_answer": "C",
+      "pred_label": "Mixture",
+      "correct": true,
+      "time_seconds": 4.0100257396698,
+      "atomic_propositions": "None",
+      "retrieved_context": "Document [1] (Title: Sex and headaches: What are the facts? - Medical News Today)\nURL: https://www.medicalnewstoday.com/articles/is-sex-good-for-headaches Domain: medicalnewstoday.com Retrieved at: 2026-05-04T05:14:11.059914+00:00 Snippet: The relationship between sex and headaches can differ for each individual. Some may find sex can relieve headache pain and tension, and others may find that headaches appear with sexual activity ... Runtime note: This live web snippet is weak secondary evidence and requires human verification.\n\nDocument [2] (Title: Sex headaches - Symptoms & causes - Mayo Clinic)\nURL: https://www.mayoclinic.org/diseases-conditions/sex-headaches/symptoms-causes/syc-20377477 Domain: mayoclinic.org Retrieved at: 2026-05-04T05:14:11.059914+00:00 Snippet: Sex headaches aren't usually a cause for concern. But consult your health care provider right away if you experience a headache during sexual activity — especially if it begins abruptly or it's your first headache of this type. Runtime note: This live web snippet is weak secondary evidence and requires human verification.\n\nDocument [3] (Title: The Truth About Headaches and Sex - Psychology Today)\nURL: https://www.psychologytoday.com/us/blog/sexual-self/202105/the-truth-about-headaches-and-sex Domain: psychologytoday.com Retrieved at: 2026-05-04T05:14:11.059914+00:00 Snippet: The old cliché suggests that sex and headaches don't mix. However, research finds that, for some headache sufferers, sexual desire is present and can relieve pain. Runtime note: This live web snippet is weak secondary evidence and requires human verification.\n\nDocument [4] (Title: Do Orgasms Help With Headaches? - Verywell Health)\nURL: https://www.verywellhealth.com/orgasm-headache-migraine-1718250 Domain: verywellhealth.com Retrieved at: 2026-05-04T05:14:11.059914+00:00 Snippet: A 2013 study concluded that sexual activity can lead to partial or complete relief of headaches in some people with migraine headaches and a few people with cluster headaches. 1 Though the cause of this phenomenon is unclear, some researchers suggest that the rush of endorphins and other hormones after an orgasm may spontaneously ease headaches. Runtime note: This live web snippet is weak secondary evidence and requires human verification.\n\nDocument [5] (Title: Can Sex Actually Relieve Your Headaches? - Health)\nURL: https://www.health.com/does-sex-help-with-headaches-11759139 Domain: health.com Retrieved at: 2026-05-04T05:14:11.059914+00:00 Snippet: Sex may relieve headaches for some people, as it provides relaxation and endorphin release. However, it can worsen or trigger symptoms for others. Runtime note: This live web snippet is weak secondary evidence and requires human verification.",
+      "vote_distribution": {
+        "C": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "The core claim is whether sexual activity can relieve headaches. Evidence from multiple sources suggests that for some individuals, sexual activity and orgasms can provide relief from headache pain due to the release of endorphins and other hormones which may ease symptoms. However, these effects are not universal; there are also reports indicating that sexual activity might worsen or trigger headaches in certain cases. Therefore, while there is evidence supporting the claim for some individuals, it cannot be generalized universally.",
+          "choice": "C"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_30",
+      "question": "Are plastic kitchen boards more hygienic than wooden ones?",
+      "gt_answer": "C",
+      "gt_label": "1",
+      "pred_answer": "C",
+      "pred_label": "Mixture",
+      "correct": true,
+      "time_seconds": 3.8371708393096924,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "C": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "1. The core health claim is that plastic kitchen boards are more hygienic than wooden ones.\n2. Evidence supports this claim in the context of bacterial growth and ease of cleaning: Plastic boards do not absorb bacteria like wood can, making them easier to sanitize effectively.\n3. However, there is some nuance as studies have shown that certain types of wood (like cedar) can inhibit bacterial growth due to natural antibacterial properties, but this does not negate the overall advantage plastic has in terms of hygiene and ease of cleaning for most kitchen environments.\n4. Given the primary evidence favoring plastic boards for general use in kitchens, the claim leans towards being true despite some exceptions.",
+          "choice": "C"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_31",
+      "question": "Does CBD or cannabis use protect against covid-19 disease???",
+      "gt_answer": "C",
+      "gt_label": "1",
+      "pred_answer": "B",
+      "pred_label": "False",
+      "correct": false,
+      "time_seconds": 2.3160295486450195,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "B": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "The core health claim is that CBD or cannabis use protects against contracting COVID-19 disease. There is no credible medical evidence to support this claim; studies do not show a protective effect of CBD or cannabis on preventing SARS-CoV-2 infection or reducing the risk of severe illness from COVID-19. Therefore, the statement is false.",
+          "choice": "B"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_32",
+      "question": "Do probiotic foods have an antidepressant effect or a positive effect on the mind?",
+      "gt_answer": "C",
+      "gt_label": "1",
+      "pred_answer": "C",
+      "pred_label": "Mixture",
+      "correct": true,
+      "time_seconds": 2.828148603439331,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "C": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "1. The core health claim is that probiotic foods have an antidepressant effect or a positive effect on the mind.\n2. Evidence supports some potential benefits of probiotics for mental health, including reduced symptoms of depression and anxiety in certain studies. However, the evidence is not conclusive and more research is needed to establish definitive links.\n3. Given the mixed nature of current evidence, where there are both supportive and inconclusive elements, a MIXTURE verdict seems appropriate.",
+          "choice": "C"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_33",
+      "question": "Does short-term fasting reduce the side effects of chemotherapy for cancer???",
+      "gt_answer": "C",
+      "gt_label": "1",
+      "pred_answer": "C",
+      "pred_label": "Mixture",
+      "correct": true,
+      "time_seconds": 3.096616744995117,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "C": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "1. The core health claim is that short-term fasting reduces the side effects of chemotherapy for cancer.\n2. Evidence from studies suggests that fasting can influence the effectiveness and toxicity of chemotherapy drugs, but results are mixed and context-dependent. Some research indicates potential benefits in reducing certain side effects like nausea and fatigue, while other evidence does not show consistent improvements or even suggests no significant impact on side effect reduction.\n3. Given the variability in outcomes across different studies and contexts, there is a need for more definitive clinical trials to conclusively support this claim universally.",
+          "choice": "C"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_34",
+      "question": "Can monk's pepper reduce PMS symptoms? PMS is the abbreviation for premenstrual syndrome. This refers to complaints that occur in the days before menstruation.",
+      "gt_answer": "A",
+      "gt_label": "0",
+      "pred_answer": "B",
+      "pred_label": "False",
+      "correct": false,
+      "time_seconds": 1.9906573295593262,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "B": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "1. The core health claim is that monk's pepper can reduce PMS symptoms. 2. There is no substantial medical evidence or clinical trials supporting the use of monk's pepper for reducing PMS symptoms. 3. Without specific scientific backing, this claim cannot be verified as true and thus requires further investigation.",
+          "choice": "B"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_35",
+      "question": "Does taking Bacopa extract improve memory performance?",
+      "gt_answer": "B",
+      "gt_label": "2",
+      "pred_answer": "C",
+      "pred_label": "Mixture",
+      "correct": false,
+      "time_seconds": 3.150251626968384,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "C": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "1. The core health claim is that taking Bacopa extract improves memory performance.\n2. Evidence from several studies suggests that Bacopa monnieri may have positive effects on cognitive function, including improvements in memory and attention. However, the quality of evidence varies, with some studies showing significant benefits while others are inconclusive or show no effect. Additionally, the dosage and duration of Bacopa supplementation can influence its efficacy.\n3. Given the mixed results from different studies, there is nuance to the claim that requires a MIXTURE verdict.",
+          "choice": "C"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_36",
+      "question": "Can stress promote dementia?",
+      "gt_answer": "A",
+      "gt_label": "0",
+      "pred_answer": "C",
+      "pred_label": "Mixture",
+      "correct": false,
+      "time_seconds": 3.714343547821045,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "C": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "1. The core health claim is that stress can promote or contribute to the development of dementia.\n2. Evidence supports a complex relationship between chronic stress and cognitive decline, including potential pathways involving neuroinflammation, oxidative stress, and changes in brain structure and function that may increase risk for neurodegenerative diseases like Alzheimer's disease over time. However, it is important to note that while there are associations observed, direct causation from stress alone leading to dementia has not been definitively established.\n3. Given the complexity of this relationship and lack of definitive proof of causation, but acknowledging evidence suggesting a link, this claim requires nuance beyond simple affirmation or denial.",
+          "choice": "C"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_37",
+      "question": "Can motherwort reduce migraine attacks?",
+      "gt_answer": "A",
+      "gt_label": "0",
+      "pred_answer": "B",
+      "pred_label": "False",
+      "correct": false,
+      "time_seconds": 4.067980766296387,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "B": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "1. The core health claim is that motherwort can reduce migraine attacks.\n2. Evidence evaluating the effectiveness of motherwort for migraines is limited and inconclusive. Motherwort has been traditionally used in some cultures, but there are no high-quality clinical trials specifically examining its efficacy for reducing migraine frequency or severity.\n3. Given the lack of robust evidence supporting this claim, it cannot be classified as true based on current medical knowledge. However, since motherwort is not entirely without potential benefits (though these are not specific to migraines), and there isn't clear contradictory evidence either, a MIXTURE verdict might seem appropriate if there were both true and false elements or context-dependency; however, the claim's core assertion lacks sufficient support.",
+          "choice": "B"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_38",
+      "question": "Does consumption of dairy products in middle and advanced age protect against bone fractures?",
+      "gt_answer": "B",
+      "gt_label": "2",
+      "pred_answer": "C",
+      "pred_label": "Mixture",
+      "correct": false,
+      "time_seconds": 3.3642005920410156,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "C": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "1. The core health claim is that consuming dairy products in middle and advanced age protects against bone fractures. 2. Evidence from randomized controlled trials and observational studies suggests a positive association between higher dairy intake and better bone density, which may reduce the risk of fractures. However, the evidence is not entirely conclusive as some studies have shown no significant effect or mixed results depending on factors such as type of dairy product consumed and individual nutritional status. 3. Given this nuance and variability in outcomes across different populations and study designs, a MIXTURE verdict seems most appropriate.",
+          "choice": "C"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_39",
+      "question": "Can green tea reduce the likelihood of dying from cancer ?",
+      "gt_answer": "B",
+      "gt_label": "2",
+      "pred_answer": "B",
+      "pred_label": "False",
+      "correct": true,
+      "time_seconds": 3.2296483516693115,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "B": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "1. The core health claim is that green tea can reduce the likelihood of dying from cancer.\n2. Evidence on this topic is mixed. Some studies suggest potential benefits of green tea in reducing cancer risk due to its antioxidant properties, but there is no strong evidence showing a direct reduction in mortality specifically from cancer. Most research focuses on prevention and not necessarily on survival rates or mortality outcomes.\n3. Given the lack of conclusive evidence directly linking regular consumption of green tea with reduced likelihood of dying from cancer, this claim cannot be fully supported by current medical literature.",
+          "choice": "B"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_40",
+      "question": "Does going to the sauna several times a week prolong women's lives???",
+      "gt_answer": "C",
+      "gt_label": "1",
+      "pred_answer": "C",
+      "pred_label": "Mixture",
+      "correct": true,
+      "time_seconds": 3.844619035720825,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "C": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "1. The core health claim is that frequent sauna use can prolong women's lives.\n2. Evidence from studies, such as the one published in JAMA Internal Medicine (2018), suggests a positive association between regular sauna bathing and reduced risk of cardiovascular disease, which could contribute to longevity. However, these studies typically include both men and women without specific focus on gender differences for this particular benefit.\n3. There is no strong evidence specifically supporting that sauna use prolongs women's lives more than it does for men or separately from other health benefits observed in the general population. Therefore, while sauna use may have health benefits associated with longevity, the claim as stated lacks specificity and direct support.",
+          "choice": "C"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_41",
+      "question": "Do mouth rinses with hydroxyapatite, for example the products \"Linola sept mouth rinse\" and \"Karex Abwehr\", protect against SARS-CoV-2 infection?",
+      "gt_answer": "C",
+      "gt_label": "1",
+      "pred_answer": "B",
+      "pred_label": "False",
+      "correct": false,
+      "time_seconds": 4.113428592681885,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "B": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "1. The core health claim is that mouth rinses containing hydroxyapatite, such as 'Linola sept mouth rinse' and 'Karex Abwehr', protect against SARS-CoV-2 infection.\n2. There is no scientific evidence supporting the use of hydroxyapatite mouth rinses for preventing SARS-CoV-2 infection. Hydroxyapatite is primarily used in dental products to remineralize tooth enamel and reduce sensitivity, not as an antiviral agent against SARS-CoV-2.\n3. No studies have been conducted that prove the efficacy of hydroxyapatite mouth rinses specifically for preventing or treating SARS-CoV-2 infection. Therefore, this claim is false.",
+          "choice": "B"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_42",
+      "question": "Can taking chlorophyll affect the odor of urine in catheter wearers or stool in people with an artificial bowel outlet?",
+      "gt_answer": "B",
+      "gt_label": "2",
+      "pred_answer": "C",
+      "pred_label": "Mixture",
+      "correct": false,
+      "time_seconds": 4.023221254348755,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "C": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "1. The core health claim is that chlorophyll can affect the odor of urine in catheter wearers or stool in people with an artificial bowel outlet.\n2. There is some evidence suggesting that chlorophyll may help reduce body odors, including those related to urine and feces. Studies have shown that chlorophyll has deodorizing properties due to its ability to bind to odor-causing compounds and neutralize them. However, the specific application in catheter wearers or people with an artificial bowel outlet is less studied.\n3. While there are anecdotal reports and some scientific basis for the claim, it would be premature to state this as a definitive fact without more targeted research on these specific populations.",
+          "choice": "C"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_43",
+      "question": "Is a lot of sunlight in childhood and adolescence a cause of age-related macular degeneration?",
+      "gt_answer": "C",
+      "gt_label": "1",
+      "pred_answer": "B",
+      "pred_label": "False",
+      "correct": false,
+      "time_seconds": 2.583806037902832,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "B": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "The core health claim is that exposure to a lot of sunlight in childhood and adolescence causes age-related macular degeneration (AMD). Evidence from medical literature suggests that while prolonged UV light exposure can damage the eyes, there is no strong evidence linking early-life sun exposure specifically to AMD later in life. AMD risk factors are more commonly associated with aging, genetics, smoking, diet, and other lifestyle factors rather than childhood sunlight exposure.",
+          "choice": "B"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_44",
+      "question": "Do sprouts or buds have a healing effect?",
+      "gt_answer": "C",
+      "gt_label": "1",
+      "pred_answer": "C",
+      "pred_label": "Mixture",
+      "correct": true,
+      "time_seconds": 2.948700428009033,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "C": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "The core health claim is about the healing effects of sprouts or buds. While some studies suggest that certain types of sprouts and buds (such as broccoli sprouts) may have beneficial health properties due to their high concentration of nutrients and bioactive compounds, there is no conclusive evidence to support a general 'healing effect' for all sprouts and buds across various conditions. The claim lacks specificity regarding the type of healing or condition treated, making it difficult to categorize as universally true without more context.",
+          "choice": "C"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_45",
+      "question": "Does PEMF noticeably improve pain in osteoarthritis? Does the method improve mobility and quality of life in sufferers?",
+      "gt_answer": "C",
+      "gt_label": "1",
+      "pred_answer": "C",
+      "pred_label": "Mixture",
+      "correct": true,
+      "time_seconds": 4.015248775482178,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "C": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "1. The core health claim is whether PEMF (Pulsed Electromagnetic Field) therapy noticeably improves pain, mobility, and quality of life in osteoarthritis sufferers.\n2. Evidence from systematic reviews and clinical trials suggests that PEMF may have some benefits for pain relief and potentially improving mobility and quality of life in osteoarthritis patients, but the evidence is not conclusive or uniformly positive across all studies. Some research shows modest improvements while others find no significant difference compared to placebo.\n3. Given the mixed results from different studies, it's important to acknowledge that while there may be some benefits for certain individuals, the overall efficacy of PEMF in osteoarthritis management is context-dependent and varies among patients.",
+          "choice": "C"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_46",
+      "question": "Do azo food dyes cause attention deficit disorder and hyperactivity in children?",
+      "gt_answer": "A",
+      "gt_label": "0",
+      "pred_answer": "C",
+      "pred_label": "Mixture",
+      "correct": false,
+      "time_seconds": 3.7338509559631348,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "C": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "1. The core health claim is that azo food dyes cause attention deficit disorder (ADD) and hyperactivity in children. 2. Evidence from several studies, including the Lancet study by McCann et al., suggests a small but statistically significant increase in hyperactive behavior among some children who consume certain mixtures of artificial colors and sodium benzoate. However, these effects are not consistent across all studies and do not establish a causal relationship for ADD or ADHD. 3. Given that the evidence is mixed and does not conclusively prove causation for ADD/ADHD, but rather suggests an effect on hyperactivity in some children, this claim requires nuance.",
+          "choice": "C"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_47",
+      "question": "Is the homeopathic remedy Neradin effective for erectile dysfunction?",
+      "gt_answer": "C",
+      "gt_label": "1",
+      "pred_answer": "B",
+      "pred_label": "False",
+      "correct": false,
+      "time_seconds": 4.468541383743286,
+      "atomic_propositions": "None",
+      "retrieved_context": "Document [1] (Title: Top 5 Homeopathic Medicine for Erectile Dysfunction - Dr Vaseem.)\nURL: https://www.homeocareclinic.in/erectile-dysfunction/ Domain: homeocareclinic.in Retrieved at: 2026-05-04T05:15:12.032775+00:00 Snippet: Explore how homeopathy can treat impotency. Learn about natural, safe, and effective remedies for erectile dysfunction with personalized homeopathic care. Runtime note: This live web snippet is weak secondary evidence and requires human verification.\n\nDocument [2] (Title: Top 10 Homeopathic Medicines for Erectile Dysfunction | Allo Health Blog)\nURL: https://www.allohealth.com/blog/sexual-dysfunction/erectile-dysfunction/homeopathic-medicines-for-erectile-dysfunction Domain: allohealth.com Retrieved at: 2026-05-04T05:15:12.032775+00:00 Snippet: Explore how homeopathic medicines are used to treat erectile dysfunction. Learn about their effects, benefits, and how homeopathy may support sexual health. Runtime note: This live web snippet is weak secondary evidence and requires human verification.\n\nDocument [3] (Title: Homeopathic Medicines for Impotence - Homeo Remedies)\nURL: https://homeopathyremedies.org/homeopathic-medicines-for-impotence/ Domain: homeopathyremedies.org Retrieved at: 2026-05-04T05:15:12.032775+00:00 Snippet: Discover effective homeopathic medicines for impotence and alleviate symptoms of erectile dysfunction with natural remedies. Introduction: Impotence, medically known as erectile dysfunction (ED), is a condition characterized by the inability to achieve or maintain an erection firm enough for sexual intercourse. Runtime note: This live web snippet is weak secondary evidence and requires human verification.\n\nDocument [4] (Title: Homeopathic Remedies for Erectile Dysfunction and Sexual Weakness)\nURL: https://www.drhomeo.com/ed/top-homeopathic-remedies-for-erectile-dysfunction-and-sexual-weakness-in-males/ Domain: drhomeo.com Retrieved at: 2026-05-04T05:15:12.032775+00:00 Snippet: Homeopathy provides natural and effective treatment for erectile dysfunction with medicines prepared from natural substances that have zero side effects. These remedies can be administered in cases of weak erection or even if there is no erection at all. Runtime note: This live web snippet is weak secondary evidence and requires human verification.\n\nDocument [5] (Title: My Personal Guide to the Best Homeopathic Remedies for Erectile Dysfunction)\nURL: https://homeopathinfo.com/my-personal-guide-to-the-best-homeopathic-remedies-for-erectile-dysfunction/ Domain: homeopathinfo.com Retrieved at: 2026-05-04T05:15:12.032775+00:00 Snippet: For this guide, I specifically focused on homeopathic remedies with a proven track record in addressing the various facets of erectile dysfunction, from physical debility to emotional blocks and performance anxiety. Runtime note: This live web snippet is weak secondary evidence and requires human verification.",
+      "vote_distribution": {
+        "B": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "The core claim is about the effectiveness of a specific homeopathic remedy, Neradin, for erectile dysfunction (ED). The provided documents are from websites promoting homeopathy and list various remedies for ED but do not provide scientific evidence or clinical trials to support their claims. Homeopathy as a practice lacks strong scientific validation for treating conditions like ED according to major medical organizations such as the National Center for Complementary and Integrative Health (NCCIH). Therefore, while these documents suggest Neradin might be used in homeopathic treatment of ED, there is no robust evidence supporting its efficacy.",
+          "choice": "B"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_48",
+      "question": "Are kinesiotapes effective for chronic non-specific lower back pain (\"low back pain\")?",
+      "gt_answer": "B",
+      "gt_label": "2",
+      "pred_answer": "B",
+      "pred_label": "False",
+      "correct": true,
+      "time_seconds": 3.868791341781616,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "B": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "1. The core health claim is whether kinesiotapes are effective for chronic non-specific lower back pain.\n2. Evidence from systematic reviews and clinical trials suggests that the effectiveness of kinesiotaping for chronic low back pain is limited. While some studies report minor improvements in symptoms, these effects are generally small and not clinically significant compared to placebo or no treatment controls. The Cochrane Database of Systematic Reviews has published findings indicating that there is insufficient evidence to support the use of kinesiotaping as a primary intervention for chronic low back pain.\n3. Given the lack of strong supportive evidence, the claim cannot be considered true in a meaningful clinical context, despite minor improvements reported by some studies.",
+          "choice": "B"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_49",
+      "question": "Is calcium from Japanese coral safe and effective in preventing disease?",
+      "gt_answer": "C",
+      "gt_label": "1",
+      "pred_answer": "C",
+      "pred_label": "Mixture",
+      "correct": true,
+      "time_seconds": 3.823347330093384,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "C": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "1. The core health claim is about the safety and effectiveness of calcium from Japanese coral in preventing disease.\n2. Evidence supporting or refuting this claim would need to come from clinical trials or systematic reviews that specifically examine the use of Japanese coral calcium for disease prevention. There are limited studies on this specific form of calcium, and existing research does not provide strong evidence either way regarding its safety and effectiveness compared to other forms of dietary calcium.\n3. Given the lack of robust evidence, it is difficult to conclusively state whether the claim is true or false without more context about what diseases are being prevented and how Japanese coral calcium compares to other sources of calcium in terms of efficacy and safety.",
+          "choice": "C"
+        }
+      ]
+    },
+    {
+      "id": "hfc_test_50",
+      "question": "Does curcumin protect healthy people from mental impairment or even from developing dementia?",
+      "gt_answer": "C",
+      "gt_label": "1",
+      "pred_answer": "C",
+      "pred_label": "Mixture",
+      "correct": true,
+      "time_seconds": 4.073328018188477,
+      "atomic_propositions": "None",
+      "retrieved_context": "",
+      "vote_distribution": {
+        "C": 1
+      },
+      "reasoning_traces": [
+        {
+          "model": "qwen2.5:14b",
+          "vote_idx": 1,
+          "step_by_step_thinking": "1. The core health claim is that curcumin protects healthy people from mental impairment or even from developing dementia.\n2. Evidence suggests that curcumin has anti-inflammatory and antioxidant properties, which may benefit brain health. However, the majority of studies on curcumin's effects on cognitive function have been conducted in animals or in humans with pre-existing conditions such as mild cognitive impairment or Alzheimer’s disease rather than healthy individuals. There is limited high-quality evidence showing that curcumin prevents mental decline or dementia in healthy people.\n3. Given the lack of strong evidence for its preventive benefits in healthy individuals, while acknowledging potential beneficial effects observed in specific populations (such as those with pre-existing conditions), this claim requires nuance and context.",
+          "choice": "C"
+        }
+      ]
+    }
+  ]
+}

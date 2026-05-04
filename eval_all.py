@@ -22,7 +22,19 @@ Run:
   python eval_all.py --dataset bioasq --model qwen2.5:14b --k 30 --votes 3
 """
 
-import sys, os, json, yaml, time, argparse, logging
+from src.generation.ollama_llm import OllamaLLM
+from src.compression.extractor import ExtractiveCompressor
+from src.retrieval.moe_retriever import MoERetriever
+from src.retrieval.graph_retriever import GraphRetriever, AtomicDecomposer
+from src.retrieval.pubmed_dense_retriever import PubMedDenseRetriever
+from src.retrieval.bm25_retriever import BM25Retriever
+import sys
+import os
+import json
+import yaml
+import time
+import argparse
+import logging
 from collections import Counter
 from typing import Optional
 
@@ -31,15 +43,9 @@ from tqdm import tqdm
 
 # ── WSL project path ──────────────────────────────────────────────────────────
 PROJECT_ROOT = "/mnt/d/Harsha/AoLM/ClinProof"
-DATA_ROOT    = "/mnt/d/Harsha/AoLM/ClinProof/data/processed"
+DATA_ROOT = "/mnt/d/Harsha/AoLM/ClinProof/data/processed"
 sys.path.insert(0, PROJECT_ROOT)
 
-from src.retrieval.bm25_retriever      import BM25Retriever
-from src.retrieval.pubmed_dense_retriever import PubMedDenseRetriever
-from src.retrieval.graph_retriever     import GraphRetriever, AtomicDecomposer
-from src.retrieval.moe_retriever       import MoERetriever
-from src.compression.extractor         import ExtractiveCompressor
-from src.generation.ollama_llm         import OllamaLLM
 
 # ── Logging ───────────────────────────────────────────────────────────────────
 logging.basicConfig(
@@ -53,15 +59,20 @@ log = logging.getLogger("eval_all")
 CONFIG = {
     # ── Model ────────────────────────────────────────────────────────────────
     "model":            "qwen2.5:14b",   # Best available local model
-    "decomp_model":     "medllama2:7b", # Medical model specifically for atomic decomp
+    # Medical model specifically for atomic decomp
+    "decomp_model":     "medllama2:7b",
     "votes":            3,               # Self-consistency: 3-vote majority
-    "ensemble_mode":    True,            # Each vote from the same model (True = round-robin)
+    # Each vote from the same model (True = round-robin)
+    "ensemble_mode":    True,
     # ── Retrieval ────────────────────────────────────────────────────────────
     "k":                50,              # Stage-2 final top-k docs to compressor
-    "bm25_candidates":  200,             # Stage-1 BM25 candidate pool (pre-filter)
+    # Stage-1 BM25 candidate pool (pre-filter)
+    "bm25_candidates":  200,
     "use_bm25":         True,            # Stage-1: BM25 keyword matching
-    "use_pubmed":       False,           # Stage-2: MedCPT FAISS semantic retriever (DISABLED for now)
-    "use_graph":        False,           # Stage-2+: KG GraphRAG (requires kg_graph.pkl; enable with --use-graph)
+    # Stage-2: MedCPT FAISS semantic retriever (DISABLED for now)
+    "use_pubmed":       False,
+    # Stage-2+: KG GraphRAG (requires kg_graph.pkl; enable with --use-graph)
+    "use_graph":        False,
     # ── Recency weighting (for MedChangeQA temporal evaluation) ─────────────
     "recency_alpha":    0.0,             # 0 = disabled; 0.3 = mild; 0.7 = strong
     # ── Context & Compression ────────────────────────────────────────────────
@@ -72,7 +83,8 @@ CONFIG = {
     "checkpoint_every": 1,              # Checkpoint frequency (questions)
     "tag":              "fullpower_v1",  # Output file tag
     "results_dir":      f"{PROJECT_ROOT}/results",
-    "experiment_id":    "",             # Optional experiment identifier for cross-run analysis
+    # Optional experiment identifier for cross-run analysis
+    "experiment_id":    "",
 }
 
 # ─── Dataset Paths ────────────────────────────────────────────────────────────
@@ -171,6 +183,7 @@ Where A=TRUE, B=FALSE, C=MIXTURE."""
 
 # ─── Dataset Loaders ─────────────────────────────────────────────────────────
 
+
 def load_medqa(count: Optional[int]):
     """
     Load MedQA-US test set (JSONL format).
@@ -186,7 +199,8 @@ def load_medqa(count: Optional[int]):
                 continue
             row = json.loads(line)
             # Collect option keys A-E that exist and have non-empty text
-            opt_map = {k: row[k] for k in ("A", "B", "C", "D", "E") if k in row and row[k]}
+            opt_map = {k: row[k] for k in (
+                "A", "B", "C", "D", "E") if k in row and row[k]}
             answer_key = str(row.get("answer_idx", "A")).strip().upper()
             if answer_key not in opt_map:
                 answer_key = next(iter(opt_map), "A")
@@ -204,8 +218,9 @@ def load_medqa(count: Optional[int]):
 
 def load_medchangeqa(count: Optional[int]):
     """Load the full MedChangeQA dataset."""
-    LABEL_MAP = {"SUPPORTED": "A", "REFUTED": "B", "NOT ENOUGH INFORMATION": "C"}
-    OPTIONS   = {"A": "SUPPORTED", "B": "REFUTED", "C": "NOT ENOUGH INFORMATION"}
+    LABEL_MAP = {"SUPPORTED": "A", "REFUTED": "B",
+                 "NOT ENOUGH INFORMATION": "C"}
+    OPTIONS = {"A": "SUPPORTED", "B": "REFUTED", "C": "NOT ENOUGH INFORMATION"}
 
     df = pd.read_csv(DATASET_PATHS["medchangeqa"])
     df = df.dropna(subset=["Question", "Newest Label"])
@@ -259,7 +274,8 @@ def load_scifact(split: str = "test", count: Optional[int] = None):
     Labels: SUPPORT → A, CONTRADICT → B, (no evidence) → C (NEI)
     """
     LABEL_MAP = {"SUPPORT": "A", "CONTRADICT": "B", "": "C"}
-    OPTIONS   = {"A": "SUPPORTED", "B": "CONTRADICTED", "C": "NOT ENOUGH INFORMATION"}
+    OPTIONS = {"A": "SUPPORTED", "B": "CONTRADICTED",
+               "C": "NOT ENOUGH INFORMATION"}
 
     path = DATASET_PATHS[f"scifact_{split}"]
     df = pd.read_csv(path)
@@ -267,10 +283,12 @@ def load_scifact(split: str = "test", count: Optional[int] = None):
     # SciFact may have duplicate claim IDs with multiple evidence rows → deduplicate
     # Keep the row with a label if one exists, else keep the first row
     def pick_row(grp):
-        labelled = grp[grp["evidence_label"].notna() & (grp["evidence_label"] != "")]
+        labelled = grp[grp["evidence_label"].notna() & (
+            grp["evidence_label"] != "")]
         return labelled.iloc[0] if len(labelled) else grp.iloc[0]
 
-    df = df.groupby("id", as_index=False, group_keys=False).apply(pick_row).reset_index(drop=True)
+    df = df.groupby("id", as_index=False, group_keys=False).apply(
+        pick_row).reset_index(drop=True)
 
     questions = []
     for _, row in df.iterrows():
@@ -341,32 +359,26 @@ class HierarchicalRetriever:
 
     def __init__(self, moe: MoERetriever, bm25: Optional[BM25Retriever],
                  use_bm25: bool = True):
-        self.moe      = moe
-        self.bm25     = bm25
+        self.moe = moe
+        self.bm25 = bm25
         self.use_bm25 = use_bm25 and (bm25 is not None)
 
     def retrieve(self, query: str, k: int = 25, bm25_candidates: int = 100,
                  options=None, enable_pubmed: bool = True, pubmed_mode: str = "pubmed",
-                 recency_alpha: float = 0.0):
-        """
-        If BM25 is active:
-          1. BM25 retrieves `bm25_candidates` docs (optionally with recency boost).
-          2. MoE (MedCPT/graph) re-ranks those candidates to top-k.
-        Else:
-          MoE retrieves directly.
-        """
+                 recency_alpha: float = 0.0, enable_live_search: bool = False,
+                 live_search_k: int = 5, live_search_region: str = "in-en",
+                 live_search_queries: Optional[list] = None):
         if self.use_bm25 and self.bm25 and self.bm25.bm25:
             bm25_docs, _ = self.bm25.retrieve(
                 query, k=bm25_candidates, recency_alpha=recency_alpha
             )
-            # Inject bm25 docs as a pre-fetched pool into the moe's pubmed retriever
-            # For simplicity, we pass the candidate pool to a lightweight re-ranker
-            # using MoE's built-in RRF mechanism by running both in parallel
             moe_docs, moe_scores = self.moe.retrieve(
                 query, k1=k, options=options,
                 enable_pubmed=enable_pubmed, pubmed_mode=pubmed_mode,
+                enable_live_search=enable_live_search,
+                live_search_k=live_search_k, live_search_region=live_search_region,
+                live_search_queries=live_search_queries,
             )
-            # Merge: BM25 candidates + MoE results via RRF
             merged_docs, merged_scores = self._rrf_merge(
                 [(bm25_docs, list(range(len(bm25_docs))), 0.4),
                  (moe_docs,  moe_scores,                  0.6)],
@@ -377,6 +389,9 @@ class HierarchicalRetriever:
             return self.moe.retrieve(
                 query, k1=k, options=options,
                 enable_pubmed=enable_pubmed, pubmed_mode=pubmed_mode,
+                enable_live_search=enable_live_search,
+                live_search_k=live_search_k, live_search_region=live_search_region,
+                live_search_queries=live_search_queries,
             )
 
     @staticmethod
@@ -385,8 +400,9 @@ class HierarchicalRetriever:
         for docs, scores, weight in pools:
             for rank, doc in enumerate(docs):
                 did = (doc.get("PMID") or doc.get("pmid") or
-                       doc.get("id")   or doc.get("title", "")[:50])
-                rrf_scores[did] = rrf_scores.get(did, 0.0) + weight / (rrf_k + rank + 1)
+                       doc.get("id") or doc.get("title", "")[:50])
+                rrf_scores[did] = rrf_scores.get(
+                    did, 0.0) + weight / (rrf_k + rank + 1)
                 if did not in registry:
                     registry[did] = doc
         top = sorted(rrf_scores, key=lambda x: rrf_scores[x], reverse=True)[:k]
@@ -396,13 +412,14 @@ class HierarchicalRetriever:
 # ─── Core Evaluation Logic ────────────────────────────────────────────────────
 
 def answer_with_calibration(llm_list, question, options, context, system_prompt,
-                             votes=1, is_ensemble=False, has_maybe=False):
+                            votes=1, is_ensemble=False, has_maybe=False):
     """Run LLM with optional self-consistency voting."""
     candidates, thoughts = [], []
 
     for i in range(votes):
         llm = llm_list[i % len(llm_list)] if is_ensemble else llm_list[0]
-        r   = llm._single_pass(question, options, context, system_prompt, temperature=0.35)
+        r = llm._single_pass(question, options, context,
+                             system_prompt, temperature=0.35)
         candidates.append(r.get("answer_choice", list(options.keys())[0]))
         thoughts.append({
             "model":               llm.model_name,
@@ -411,7 +428,7 @@ def answer_with_calibration(llm_list, question, options, context, system_prompt,
             "choice":              r.get("answer_choice", "?"),
         })
 
-    vote_counts  = Counter(candidates)
+    vote_counts = Counter(candidates)
     most_common, _ = vote_counts.most_common(1)[0]
     final_ans = most_common
 
@@ -451,8 +468,11 @@ def run_eval(
     config_snap:   dict,
     has_maybe:     bool = False,
     enable_pubmed: bool = True,
-    pubmed_mode:   str  = "pubmed",
+    pubmed_mode:   str = "pubmed",
     label_inv:     dict = None,
+    enable_live_search: bool = False,
+    live_search_k:      int = 5,
+    live_search_region: str = "in-en",
 ) -> float:
 
     print(f"\n{'='*70}")
@@ -469,11 +489,13 @@ def run_eval(
             except Exception:
                 pass
         if done:
-            print(f"  Resuming from checkpoint ({len(done)} already completed)")
+            print(
+                f"  Resuming from checkpoint ({len(done)} already completed)")
 
     results = list(done.values())
     correct = sum(1 for r in results if r["correct"])
-    chk_every = config_snap.get("checkpoint_every", 1)  # changed to 1 so results are always saved
+    # changed to 1 so results are always saved
+    chk_every = config_snap.get("checkpoint_every", 1)
 
     try:
         # ── Main evaluation loop ───────────────────────────────────────────────
@@ -483,6 +505,22 @@ def run_eval(
 
             t = time.time()
             try:
+                # Standalone Atomic Decomposition
+                # Run this BEFORE retrieval so we can extract keywords for live search
+                props_text = "None"
+                propositions = None
+                if decomposer:
+                    entities, propositions = decomposer.decompose(
+                        q["question"], q.get("options"))
+                    if propositions:
+                        props_text = "Key medical claims to verify:\n" + \
+                            "\n".join(f"- {p}" for p in propositions)
+
+                # Fallback query for live search if no decomposer is present
+                clean_q = q["question"].replace("?", "").replace(",", "")
+                fallback_words = [
+                    w for w in clean_q.split() if len(w) > 3][:12]
+                fallback_query = " ".join(fallback_words)
                 raw_docs, _ = retriever.retrieve(
                     q["question"],
                     k=config_snap["k"],
@@ -491,31 +529,36 @@ def run_eval(
                     enable_pubmed=enable_pubmed,
                     pubmed_mode=pubmed_mode,
                     recency_alpha=config_snap.get("recency_alpha", 0.0),
+                    enable_live_search=enable_live_search,
+                    live_search_k=live_search_k,
+                    live_search_region=live_search_region,
+                    live_search_queries=propositions or [fallback_query],
                 )
-                
-                # Standalone Atomic Decomposition
-                # Run this even if GraphRetriever (Knowledge Graph) is disabled.
-                props_text = "None"
-                if decomposer:
-                    entities, propositions = decomposer.decompose(q["question"], q.get("options"))
-                    if propositions:
-                        props_text = "Key medical claims to verify:\n" + "\n".join(f"- {p}" for p in propositions)
-                        # Remove existing atomic propositions from graph retriever if present
-                        raw_docs = [d for d in raw_docs if d.get("title") != "Atomic Propositions"]
-                        # Prepend the standalone atomic propositions document
-                        raw_docs.insert(0, {
-                            "title": "Atomic Propositions",
-                            "content": props_text,
-                            "hop": 0,
-                            "PMID": "atomic_decomp"
-                        })
 
-                ctx = compressor.compress(
-                    q["question"], raw_docs,
-                    context_length=config_snap["context_len"]
-                )
+                if propositions:
+                    # Remove existing atomic propositions from graph retriever if present
+                    raw_docs = [d for d in raw_docs if d.get(
+                        "title") != "Atomic Propositions"]
+                    # Prepend the standalone atomic propositions document
+                    raw_docs.insert(0, {
+                        "title": "Atomic Propositions",
+                        "content": props_text,
+                        "hop": 0,
+                        "PMID": "atomic_decomp"
+                    })
+
+                if config_snap.get("empty_evidence"):
+                    ctx = ""
+                elif config_snap.get("no_compression"):
+                    ctx = "\n\n".join(
+                        f"Document [{i+1}] (Title: {d.get('title', 'None')})\n{d.get('content', '')}" for i, d in enumerate(raw_docs))
+                else:
+                    ctx = compressor.compress(
+                        q["question"], raw_docs,
+                        context_length=config_snap["context_len"]
+                    )
                 props = props_text
-                res  = answer_with_calibration(
+                res = answer_with_calibration(
                     llm_list, q["question"], q["options"], ctx, sys_prompt,
                     votes=config_snap["votes"],
                     is_ensemble=config_snap["ensemble_mode"],
@@ -526,13 +569,13 @@ def run_eval(
                 log.error(f"ERROR on Q{qi}: {e}")
                 pred, res, ctx, props = "?", {}, "Error", "Error"
 
-            ok      = pred == q["answer"]
+            ok = pred == q["answer"]
             elapsed = time.time() - t
             if ok:
                 correct += 1
 
             pred_label = label_inv.get(pred, pred) if label_inv else pred
-            gt_label   = q.get("label", q.get("answer", ""))
+            gt_label = q.get("label", q.get("answer", ""))
             tqdm.write(
                 f"  [{'✅' if ok else '❌'}] Q{qi+1:>4} | pred={pred_label:<24} "
                 f"gt={gt_label:<24} ({elapsed:.1f}s)"
@@ -556,18 +599,21 @@ def run_eval(
             done[q["id"]] = rec
 
             if len(results) % chk_every == 0:
-                _save_checkpoint(out_path, results, correct, len(questions), config_snap)
+                _save_checkpoint(out_path, results, correct,
+                                 len(questions), config_snap)
     except KeyboardInterrupt:
         print("\n  [Interrupt] Checkpoint saving on interruption...")
 
     acc = correct / len(questions) if questions else 0.0
-    _save_checkpoint(out_path, results, correct, len(questions), config_snap, final=True)
+    _save_checkpoint(out_path, results, correct, len(
+        questions), config_snap, final=True)
     print(f"\n  {name} Final Accuracy: {correct}/{len(questions)} ({acc*100:.1f}%)")
     return acc
 
 
 # ─── Entry Point ─────────────────────────────────────────────────────────────
-DATASET_CHOICES = ["all", "medqa", "medchangeqa", "bioasq", "scifact", "healthfc"]
+DATASET_CHOICES = ["all", "medqa", "medchangeqa",
+                   "bioasq", "scifact", "healthfc"]
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -616,29 +662,60 @@ if __name__ == "__main__":
                         help="Unique experiment identifier saved in result JSON for cross-run analysis")
     parser.add_argument("--results-dir", type=str, default=None,
                         help="Override default results directory")
+    # -- Live web search -------------------------------------------------------
+    parser.add_argument("--enable-live-search", action="store_true",
+                        help="Enable DDGS live web search as additional evidence source")
+    parser.add_argument("--live-search-k", type=int, default=5,
+                        help="Number of live web search results (default=5)")
+    parser.add_argument("--live-search-region", type=str, default="in-en",
+                        help="DuckDuckGo region code (default=in-en)")
+    parser.add_argument("--no-compression", action="store_true",
+                        help="Disable context compression (pass raw docs directly)")
+    parser.add_argument("--empty-evidence", action="store_true",
+                        help="Pass empty string as context (for pure zero-shot)")
     args = parser.parse_args()
 
     # ── Apply CLI overrides ────────────────────────────────────────────────
-    if args.model:         CONFIG["model"]         = args.model
-    if args.decomp_model:  CONFIG["decomp_model"]  = args.decomp_model
-    if args.count:         CONFIG["count"]         = args.count
-    if args.k:             CONFIG["k"]             = args.k
-    if args.votes:         CONFIG["votes"]         = args.votes
-    if args.tag:           CONFIG["tag"]           = args.tag
-    if args.no_bm25:       CONFIG["use_bm25"]      = False
-    if args.no_pubmed:     CONFIG["use_pubmed"]    = False
-    if args.use_pubmed:    CONFIG["use_pubmed"]    = True   # --use-pubmed wins over default False
-    if args.use_graph:     CONFIG["use_graph"]     = True
-    if args.no_kg:         CONFIG["use_graph"]     = False   # --no-kg wins
-    if args.no_resume:     CONFIG["resume"]        = False
-    if args.recency_bm25:  CONFIG["recency_alpha"] = args.recency_alpha
-    if args.experiment_id: CONFIG["experiment_id"] = args.experiment_id
-    if args.results_dir:   CONFIG["results_dir"]   = args.results_dir
+    if args.model:
+        CONFIG["model"] = args.model
+    if args.decomp_model:
+        CONFIG["decomp_model"] = args.decomp_model
+    if args.count:
+        CONFIG["count"] = args.count
+    if args.k:
+        CONFIG["k"] = args.k
+    if args.votes:
+        CONFIG["votes"] = args.votes
+    if args.tag:
+        CONFIG["tag"] = args.tag
+    if args.no_bm25:
+        CONFIG["use_bm25"] = False
+    if args.no_pubmed:
+        CONFIG["use_pubmed"] = False
+    if args.use_pubmed:
+        CONFIG["use_pubmed"] = True   # --use-pubmed wins over default False
+    if args.use_graph:
+        CONFIG["use_graph"] = True
+    if args.no_kg:
+        CONFIG["use_graph"] = False   # --no-kg wins
+    if args.no_resume:
+        CONFIG["resume"] = False
+    if args.recency_bm25:
+        CONFIG["recency_alpha"] = args.recency_alpha
+    if args.experiment_id:
+        CONFIG["experiment_id"] = args.experiment_id
+    if args.results_dir:
+        CONFIG["results_dir"] = args.results_dir
+    CONFIG["enable_live_search"] = args.enable_live_search
+    CONFIG["live_search_k"] = args.live_search_k
+    CONFIG["live_search_region"] = args.live_search_region
+    CONFIG["no_compression"] = args.no_compression
+    CONFIG["empty_evidence"] = args.empty_evidence
 
     # ── Build model list: --models overrides --model ───────────────────────
     if args.models:
         model_tags = [m.strip() for m in args.models.split(",") if m.strip()]
-        CONFIG["model"]  = model_tags[0]   # primary model shown in summary
+        CONFIG["model"] = model_tags[0]   # primary model shown in summary
         CONFIG["models"] = model_tags
         CONFIG["ensemble_mode"] = True
         log.info(f"Ensemble mode: {model_tags}")
@@ -653,9 +730,14 @@ if __name__ == "__main__":
     print("  ClinProof Comprehensive Evaluation")
     print(f"  Dataset     : {args.dataset.upper()}")
     print(f"  Models      : {CONFIG['models']}")
-    print(f"  k={CONFIG['k']}  bm25_candidates={CONFIG['bm25_candidates']}  votes={CONFIG['votes']}")
-    print(f"  BM25={CONFIG['use_bm25']}  PubMed/MedCPT={CONFIG['use_pubmed']}  Graph={CONFIG['use_graph']}")
-    print(f"  RecencyAlpha={CONFIG['recency_alpha']}  ExpID={CONFIG['experiment_id'] or '(none)'}")
+    print(
+        f"  k={CONFIG['k']}  bm25_candidates={CONFIG['bm25_candidates']}  votes={CONFIG['votes']}")
+    print(
+        f"  BM25={CONFIG['use_bm25']}  PubMed/MedCPT={CONFIG['use_pubmed']}  Graph={CONFIG['use_graph']}")
+    print(
+        f"  LiveSearch={CONFIG['enable_live_search']}  LiveK={CONFIG['live_search_k']}  LiveRegion={CONFIG['live_search_region']}")
+    print(
+        f"  RecencyAlpha={CONFIG['recency_alpha']}  ExpID={CONFIG['experiment_id'] or '(none)'}")
     print("="*70)
 
     # ── LLM(s) ────────────────────────────────────────────────────────────
@@ -665,10 +747,12 @@ if __name__ == "__main__":
         m_cfg["model"] = dict(cfg["model"])
         m_cfg["model"]["name"] = model_tag
         ll_models.append(OllamaLLM(m_cfg))
-    log.info(f"Loaded {len(ll_models)} LLM(s): {[m.model_name for m in ll_models]}")
+    log.info(
+        f"Loaded {len(ll_models)} LLM(s): {[m.model_name for m in ll_models]}")
 
     # ── Decomposer LLM ────────────────────────────────────────────────────
-    log.info(f"Loading Decomposer LLM ({CONFIG['decomp_model']}) for atomic questions...")
+    log.info(
+        f"Loading Decomposer LLM ({CONFIG['decomp_model']}) for atomic questions...")
     decomp_cfg = dict(cfg)
     decomp_cfg["model"] = dict(cfg.get("model", {}))
     decomp_cfg["model"]["name"] = CONFIG["decomp_model"]
@@ -683,12 +767,25 @@ if __name__ == "__main__":
                 log.info(f"Loading GraphRetriever from {kg_path} ...")
                 graph = GraphRetriever(kg_path, cfg, llm=decomp_llm)
             except Exception as e:
-                log.warning(f"GraphRetriever failed ({e}). Continuing without Graph.")
+                log.warning(
+                    f"GraphRetriever failed ({e}). Continuing without Graph.")
         else:
-            log.warning(f"kg_graph.pkl not found at '{kg_path}'. Skipping GraphRAG.")
+            log.warning(
+                f"kg_graph.pkl not found at '{kg_path}'. Skipping GraphRAG.")
 
-    # ── MoE Retriever ─────────────────────────────────────────────────────
+    # -- Live web retriever (optional) ----------------------------------------
+    live_web = None
+    if CONFIG["enable_live_search"]:
+        try:
+            from src.retrieval.live_web_search import LiveWebSearchRetriever
+            live_web = LiveWebSearchRetriever()
+            log.info("Loading DDGS live web retriever...")
+        except Exception as e:
+            log.warning(f"Could not load live web retriever: {e}")
+
+    # -- MoE Retriever --------------------------------------------------------
     moe = MoERetriever(graph, None, None, cfg,
+                       live_web_retriever=live_web,
                        ollama_client=ll_models[0].client)
 
     # ── MedCPT / PubMed FAISS (Stage-2 semantic) ──────────────────────────
@@ -707,16 +804,19 @@ if __name__ == "__main__":
         corpus_dir = f"{PROJECT_ROOT}/data/corpus"
         try:
             log.info(f"Loading BM25 retriever (Stage-1) from {corpus_dir} ...")
-            bm25 = BM25Retriever(corpus_dir, corpus_name="textbooks", cache=True)
+            bm25 = BM25Retriever(
+                corpus_dir, corpus_name="textbooks", cache=True)
             if bm25.bm25 is None:
-                log.warning("BM25 index is empty (no textbook chunks found). Skipping Stage-1.")
+                log.warning(
+                    "BM25 index is empty (no textbook chunks found). Skipping Stage-1.")
                 bm25 = None
         except Exception as e:
-            log.warning(f"BM25 retriever could not be loaded: {e}. Continuing without Stage-1.")
+            log.warning(
+                f"BM25 retriever could not be loaded: {e}. Continuing without Stage-1.")
             bm25 = None
 
     # ── Hierarchical retriever & compressor ───────────────────────────────
-    retriever  = HierarchicalRetriever(moe, bm25, use_bm25=CONFIG["use_bm25"])
+    retriever = HierarchicalRetriever(moe, bm25, use_bm25=CONFIG["use_bm25"])
     compressor = ExtractiveCompressor(cfg)
     decomposer = None
     if not args.no_decomp:
@@ -733,7 +833,7 @@ if __name__ == "__main__":
 
     # ── MedQA ─────────────────────────────────────────────────────────────
     if run in ("all", "medqa"):
-        qs  = load_medqa(CONFIG["count"])
+        qs = load_medqa(CONFIG["count"])
         acc = run_eval(
             "MedQA-US", qs, ll_models, retriever, compressor, decomposer,
             MEDQA_PROMPT, _path("medqa"), CONFIG,
@@ -743,49 +843,62 @@ if __name__ == "__main__":
 
     # ── MedChangeQA ───────────────────────────────────────────────────────
     if run in ("all", "medchangeqa"):
-        MEDCHG_INV = {"A": "SUPPORTED", "B": "REFUTED", "C": "NOT ENOUGH INFORMATION"}
-        qs  = load_medchangeqa(CONFIG["count"])
+        MEDCHG_INV = {"A": "SUPPORTED", "B": "REFUTED",
+                      "C": "NOT ENOUGH INFORMATION"}
+        qs = load_medchangeqa(CONFIG["count"])
         acc = run_eval(
             "MedChangeQA", qs, ll_models, retriever, compressor, decomposer,
             MEDCHANGEQA_PROMPT, _path("medchangeqa"), CONFIG,
             has_maybe=True, enable_pubmed=CONFIG["use_pubmed"],
             label_inv=MEDCHG_INV,
+            enable_live_search=CONFIG.get("enable_live_search", False),
+            live_search_k=CONFIG.get("live_search_k", 5),
+            live_search_region=CONFIG.get("live_search_region", "in-en"),
         )
         summary_lines.append(f"  MedChangeQA : {acc:.1%}")
 
     # ── BioASQ ────────────────────────────────────────────────────────────
     if run in ("all", "bioasq"):
         BIOASQ_INV = {"A": "Yes", "B": "No"}
-        qs  = load_bioasq(CONFIG["count"])
+        qs = load_bioasq(CONFIG["count"])
         acc = run_eval(
             "BioASQ-7b (Y/N)", qs, ll_models, retriever, compressor, decomposer,
             BIOASQ_PROMPT, _path("bioasq"), CONFIG,
             has_maybe=False, enable_pubmed=CONFIG["use_pubmed"],
             label_inv=BIOASQ_INV,
+            enable_live_search=CONFIG.get("enable_live_search", False),
+            live_search_k=CONFIG.get("live_search_k", 5),
+            live_search_region=CONFIG.get("live_search_region", "in-en"),
         )
         summary_lines.append(f"  BioASQ      : {acc:.1%}")
 
     # ── SciFact (test split) ──────────────────────────────────────────────
     if run in ("all", "scifact"):
         SCIFACT_INV = {"A": "SUPPORT", "B": "CONTRADICT", "C": "NEI"}
-        qs  = load_scifact(split="test", count=CONFIG["count"])
+        qs = load_scifact(split="test", count=CONFIG["count"])
         acc = run_eval(
             "SciFact-Test", qs, ll_models, retriever, compressor, decomposer,
             SCIFACT_PROMPT, _path("scifact_test"), CONFIG,
             has_maybe=True, enable_pubmed=CONFIG["use_pubmed"],
             label_inv=SCIFACT_INV,
+            enable_live_search=CONFIG.get("enable_live_search", False),
+            live_search_k=CONFIG.get("live_search_k", 5),
+            live_search_region=CONFIG.get("live_search_region", "in-en"),
         )
         summary_lines.append(f"  SciFact     : {acc:.1%}")
 
     # ── HealthFC (test split) ─────────────────────────────────────────────
     if run in ("all", "healthfc"):
         HEALTHFC_INV = {"A": "True", "B": "False", "C": "Mixture"}
-        qs  = load_healthfc(split="test", count=CONFIG["count"])
+        qs = load_healthfc(split="test", count=CONFIG["count"])
         acc = run_eval(
             "HealthFC-Test", qs, ll_models, retriever, compressor, decomposer,
             HEALTHFC_PROMPT, _path("healthfc_test"), CONFIG,
             has_maybe=True, enable_pubmed=CONFIG["use_pubmed"],
             label_inv=HEALTHFC_INV,
+            enable_live_search=CONFIG.get("enable_live_search", False),
+            live_search_k=CONFIG.get("live_search_k", 5),
+            live_search_region=CONFIG.get("live_search_region", "in-en"),
         )
         summary_lines.append(f"  HealthFC    : {acc:.1%}")
 

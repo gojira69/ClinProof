@@ -2,7 +2,6 @@
 data/
 logs/
 pubmed_download/
-results/
 
 # Old log files
 *.log

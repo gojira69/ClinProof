@@ -54,13 +54,99 @@ class Experiment:
     recency_alpha: float = 0.3
     # Decomposition
     no_decomp:     bool = False
+    # MedChangeQA split (all=512, test=103, val=102, train=307)
+    medchangeqa_split: str = "all"
     # Extra datasets
     datasets:      List[str] = field(default_factory=lambda: [
         "bioasq", "healthfc", "scifact"])
+    enable_live_search: bool = False
     extra_flags:   List[str] = field(default_factory=list)
 
 
 EXPERIMENTS: List[Experiment] = [
+    # ==========================================================================
+    # EXP BEST: Optimal Configurations (Homo vs Hetero)
+    # ==========================================================================
+    Experiment(
+        tag="BEST1_homo_dense_bm25",
+        experiment_id="BEST1",
+        group="BEST",
+        description="Best Homogeneous: Qwen2.5 (3-vote), Dense+BM25, Decomp",
+        models=["qwen2.5:14b"],
+        votes=3,
+        no_kg=True,
+        no_bm25=False,
+        use_pubmed=True,
+        no_decomp=False,
+        medchangeqa_split="all",
+        datasets=["bioasq", "healthfc", "medchangeqa"],
+    ),
+    Experiment(
+        tag="BEST2_hetero_dense_bm25",
+        experiment_id="BEST2",
+        group="BEST",
+        description="Best Heterogeneous: Qwen+Llama+Meditron (3-vote), Dense+BM25, Decomp",
+        models=["qwen2.5:14b", "meditron:7b", "llama3.1:8b"],
+        votes=3,
+        no_kg=True,
+        no_bm25=False,
+        use_pubmed=True,
+        no_decomp=False,
+        medchangeqa_split="all",
+        datasets=["bioasq", "healthfc", "medchangeqa"],
+    ),
+    # ==========================================================================
+    # EXP LIVE: Internet Search Ablations
+    # ==========================================================================
+    Experiment(
+        tag="LIVE1_base_homo",
+        experiment_id="LIVE1",
+        group="LIVE",
+        description="Base Model + Live Web Search (No RAG, No Decomp, No Compression)",
+        models=["qwen2.5:14b"],
+        votes=1,
+        no_kg=True,
+        no_bm25=True,
+        use_pubmed=False,
+        enable_live_search=True,
+        no_decomp=True,
+        medchangeqa_split="all",
+        datasets=["healthfc"],
+        extra_flags=["--no-compression"],
+    ),
+    Experiment(
+        tag="LIVE2_best_homo",
+        experiment_id="LIVE2",
+        group="LIVE",
+        description="Best Pipeline + Live Web Search (BM25+Dense, Decomp, Compression)",
+        models=["qwen2.5:14b"],
+        votes=3,
+        no_kg=True,
+        no_bm25=False,
+        use_pubmed=True,
+        enable_live_search=True,
+        no_decomp=False,
+        medchangeqa_split="all",
+        datasets=["healthfc"],
+    ),
+    # ==========================================================================
+    # EXP ZERO: Pure Zero-Shot Baseline
+    # No RAG, no context, no atomic decomp, no compression.
+    # Answers the question: What is the base model performance without ClinProof?
+    # ==========================================================================
+    Experiment(
+        tag="Z1_zeroshot_baseline",
+        experiment_id="Z1",
+        group="Z",
+        description="Pure zero-shot baseline (no-RAG, no-decomp, empty-evidence)",
+        models=["qwen2.5:14b"],
+        votes=1,
+        no_kg=True,
+        no_bm25=True,
+        no_decomp=True,
+        datasets=["healthfc", "bioasq"],
+        extra_flags=["--empty-evidence", "--no-compression"],
+    ),
     # ==========================================================================
     # EXP A: Medical Fine-tuned vs Base Models
     # All use BM25 only (no KG) with 1 vote for speed.
@@ -282,78 +368,81 @@ EXPERIMENTS: List[Experiment] = [
     ),
 
     # ==========================================================================
-    # EXP G1: Recency BM25 Recalibration (MedChangeQA ONLY)
+    # EXP G1: PubMed Recency Re-Ranking (MedChangeQA ONLY)
     # -----------------------------------------------------------------------
-    # ROOT CAUSE FIX applied before these runs:
-    #   The textbook corpus has NO per-doc year metadata (only title/content/PMID).
-    #   _extract_year previously returned None for 100% of docs, so all recency
-    #   weights were 1.0 — a literal no-op. Fix: TEXTBOOK_EDITION_YEARS lookup
-    #   in src/retrieval/bm25_retriever.py maps textbook title → edition year.
-    #   The BM25 cache (textbooks_bm25.pkl) must be deleted before running so
-    #   it rebuilds with correct year assignments.
+    # APPROACH: Use PubMed dense retrieval ONLY (no BM25 textbooks, no KG).
+    #   PubMed articles have chronologically ordered PMIDs (~30k–33.3M, 1966–2020).
+    #   After FAISS retrieves 3×k candidates, re-rank by:
+    #       final_score = cosine_sim + alpha × pmid_recency_weight
+    #   where pmid_recency_weight ∈ [0,1] maps PMID to recency.
     #
-    # Year range after fix: 2013 (DSM-5) – 2022 (Harrison's 21st ed.)
-    # Hypothesis: after fix, mild alpha (0.1-0.3) improves REFUTED recall
-    #   by preferring newer Harrison's/Robbins chunks over older textbooks.
+    # Hypothesis: mild alpha (0.1–0.3) improves REFUTED recall by preferring
+    #   newer PubMed articles that reflect current medical consensus.
     # ==========================================================================
     Experiment(
-        tag="G1a_recency_a0.1",
+        tag="G1a_pubmed_recency_a0.1",
         experiment_id="G1a",
         group="G1",
-        description="[FIXED] BM25 + recency alpha=0.1 (very mild, with edition-year metadata)",
+        description="PubMed-only + recency alpha=0.1 (very mild PMID boost)",
         models=["qwen2.5:14b"],
-        votes=3, no_kg=True,
+        votes=3, no_kg=True, no_bm25=True, use_pubmed=True,
         recency_bm25=True, recency_alpha=0.1,
+        medchangeqa_split="test",
         datasets=["medchangeqa"],
     ),
     Experiment(
-        tag="G1b_recency_a0.2",
+        tag="G1b_pubmed_recency_a0.2",
         experiment_id="G1b",
         group="G1",
-        description="[FIXED] BM25 + recency alpha=0.2 (mild)",
+        description="PubMed-only + recency alpha=0.2 (mild)",
         models=["qwen2.5:14b"],
-        votes=3, no_kg=True,
+        votes=3, no_kg=True, no_bm25=True, use_pubmed=True,
         recency_bm25=True, recency_alpha=0.2,
+        medchangeqa_split="test",
         datasets=["medchangeqa"],
     ),
     Experiment(
-        tag="G1c_recency_a0.3",
+        tag="G1c_pubmed_recency_a0.3",
         experiment_id="G1c",
         group="G1",
-        description="[FIXED] BM25 + recency alpha=0.3 (re-run of C2 with correct metadata)",
+        description="PubMed-only + recency alpha=0.3 (moderate)",
         models=["qwen2.5:14b"],
-        votes=3, no_kg=True,
+        votes=3, no_kg=True, no_bm25=True, use_pubmed=True,
         recency_bm25=True, recency_alpha=0.3,
+        medchangeqa_split="test",
         datasets=["medchangeqa"],
     ),
     Experiment(
-        tag="G1d_recency_a0.5",
+        tag="G1d_pubmed_recency_a0.5",
         experiment_id="G1d",
         group="G1",
-        description="[FIXED] BM25 + recency alpha=0.5 (moderate)",
+        description="PubMed-only + recency alpha=0.5 (strong)",
         models=["qwen2.5:14b"],
-        votes=3, no_kg=True,
+        votes=3, no_kg=True, no_bm25=True, use_pubmed=True,
         recency_bm25=True, recency_alpha=0.5,
+        medchangeqa_split="test",
         datasets=["medchangeqa"],
     ),
     Experiment(
-        tag="G1e_recency_a0.7",
+        tag="G1e_pubmed_recency_a0.7",
         experiment_id="G1e",
         group="G1",
-        description="[FIXED] BM25 + recency alpha=0.7 (re-run of C3 with correct metadata)",
+        description="PubMed-only + recency alpha=0.7 (very strong)",
         models=["qwen2.5:14b"],
-        votes=3, no_kg=True,
+        votes=3, no_kg=True, no_bm25=True, use_pubmed=True,
         recency_bm25=True, recency_alpha=0.7,
+        medchangeqa_split="test",
         datasets=["medchangeqa"],
     ),
     Experiment(
-        tag="G1f_recency_a1.0",
+        tag="G1f_pubmed_flat",
         experiment_id="G1f",
         group="G1",
-        description="[FIXED] BM25 + recency alpha=1.0 (full recency override)",
+        description="PubMed-only BASELINE (no recency, alpha=0.0)",
         models=["qwen2.5:14b"],
-        votes=3, no_kg=True,
-        recency_bm25=True, recency_alpha=1.0,
+        votes=3, no_kg=True, no_bm25=True, use_pubmed=True,
+        recency_bm25=False, recency_alpha=0.0,
+        medchangeqa_split="test",
         datasets=["medchangeqa"],
     ),
 
@@ -436,34 +525,41 @@ def build_cmd(exp: Experiment, dataset: str, results_dir: str) -> str:
     if exp.no_decomp:
         cmd_parts.append("--no-decomp")
 
-    cmd_parts.extend(exp.extra_flags)
+    # MedChangeQA split
+    if exp.medchangeqa_split != "all" and dataset == "medchangeqa":
+        cmd_parts.append(f"--medchangeqa-split {exp.medchangeqa_split}")
+
+    # Live search flag
+    if exp.enable_live_search:
+        cmd_parts.append("--enable-live-search")
+
+    if exp.extra_flags:
+        cmd_parts.extend(exp.extra_flags)
 
     return " ".join(cmd_parts)
 
 
-# ── Runner ────────────────────────────────────────────────────────────────────
+# ── Runner ───────────────────────────────────────────────────────────────────
+
 
 def run_experiment(exp: Experiment, dataset: str, results_dir: str,
                    dry_run: bool = False) -> None:
     cmd = build_cmd(exp, dataset, results_dir)
-    # Override results_dir by editing CONFIG in the script via env var (simpler:
-    # we redirect results to the v5_ablations directory using a symlink-compatible path)
-    full_cmd = (
-        f"cd {PROJECT_ROOT} && "
-        f"CLINPROOF_RESULTS={results_dir} "
-        + cmd
-    )
+    env = os.environ.copy()
+    env["CLINPROOF_RESULTS"] = results_dir
 
     print(f"\n{'-'*70}")
     print(f"  [{exp.experiment_id}] {exp.description}")
     print(f"  Dataset : {dataset}")
-    print(f"  CMD     : {full_cmd}")
+    print(f"  CMD     : {cmd}")
     print(f"{'-'*70}")
 
     if not dry_run:
+        full_cmd = f"cd {PROJECT_ROOT} && CLINPROOF_RESULTS={results_dir} {cmd}"
         ret = subprocess.run(
             ["wsl", "-e", "bash", "-ic", full_cmd],
-            text=True
+            text=True,
+            env=env,
         )
         if ret.returncode != 0:
             print(f"  [ERROR] Experiment {exp.experiment_id} on {dataset} failed "
@@ -509,7 +605,7 @@ if __name__ == "__main__":
 
     # Filter experiments
     groups = [g.strip().upper() for g in args.group.split(
-        ",")] if args.group.lower() != "all" else ["A", "B", "C", "D", "E", "F", "G1", "G2"]
+        ",")] if args.group.lower() != "all" else ["BEST", "LIVE", "Z", "A", "B", "C", "D", "E", "F", "G1", "G2"]
     selected = [
         exp for exp in EXPERIMENTS
         if exp.group in groups
